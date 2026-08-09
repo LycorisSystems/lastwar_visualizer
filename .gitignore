@@ -1,8 +1,10 @@
-# Real SVS log files you drop here for the "choose from prepared Excel files" button on
-# the upload screen (see README). These can contain other alliances' player names, etc.,
-# so they're never committed by default — whether to ship them with the folder is a
-# per-distribution decision, not something git should decide for you.
-# files/*.xlsx
+# Note: files/*.xlsx is deliberately NOT ignored — the "choose from prepared Excel
+# files" list on the upload screen reads this repo's files/ folder via a Cloudflare
+# Pages Function (see README), so an .xlsx only shows up there once it's actually
+# committed and pushed. This is only safe to keep un-ignored while the GitHub repo
+# itself is private (see README's setup steps) — if it's ever made public again,
+# reinstate an ignore rule here before pushing real data (other alliances' player
+# names, etc.).
 
 # Claude Code — local project settings/permissions, machine-specific.
 .claude/

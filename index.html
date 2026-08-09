@@ -29,11 +29,9 @@
       <input type="file" id="file-input" accept=".xlsx" />
     </div>
     <div id="upload-error"></div>
-    <div class="preset-section">
+    <div class="preset-section" id="preset-section" hidden>
       <div class="preset-divider"><span data-i18n="upload.presetDividerText">または</span></div>
-      <button class="btn" id="btn-pick-folder" data-i18n="upload.pickFolderButton">配置済みのExcelから選ぶ</button>
-      <p class="hint" data-i18n="upload.pickFolderHint">この中の "files" フォルダに置かれた .xlsx ファイルを一覧表示します（フォルダ選択ダイアログでこのフォルダを選んでください）。</p>
-      <input type="file" id="folder-input" webkitdirectory multiple hidden />
+      <p class="hint" data-i18n="upload.pickFolderHint">リポジトリの "files" フォルダに置かれているExcelファイルです。</p>
       <div id="files-list"></div>
     </div>
     <div class="upload-notes">

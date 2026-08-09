@@ -1,14 +1,13 @@
-Put .xlsx SVS log files in this folder.
+Put .xlsx SVS log files directly in this folder (no subfolders).
 
-On the tool's upload screen, click "配置済みのExcelから選ぶ" (Choose from prepared Excel
-files) and select this "files" folder in the dialog that opens — every .xlsx file in here
-will then show up as a clickable button.
+Once committed and pushed to the GitHub repo, they automatically show up as clickable
+buttons on the tool's upload screen. This works even with the GitHub repo set to
+private — a Cloudflare Pages Function (functions/api/files/) reads this folder
+server-side using a GitHub token, so the deployed site can list/serve these files
+without the repo (or the token) ever being publicly browsable on GitHub.
 
-This one-time folder selection is a browser security requirement, not a tool limitation:
-a page opened via file:// (double-clicking index.html) has no way to read a folder's
-contents without you explicitly picking that folder first. See the main README.md for
-details.
+Note: this only works once a file is actually pushed to the repo, not just saved
+locally, and only after the one-time Cloudflare setup described in the main
+README.md ("Choose from prepared Excel files").
 
-.xlsx files placed here are excluded from git by .gitignore — they often contain other
-alliances' player names and other data you may not want committed or redistributed by
-default.
+See the main README.md for full details and setup steps.

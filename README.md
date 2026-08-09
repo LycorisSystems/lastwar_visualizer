@@ -16,7 +16,7 @@ This file is written in Japanese / English / Chinese. Scroll to your language's 
 ### 使い方
 
 1. **`index.html` をダブルクリックしてブラウザで開く**（Chrome / Edge / Safari など）。インストールや専用サーバーは不要です。
-2. 表示された画面に、SVSログの `.xlsx` ファイルをドラッグ＆ドロップ（またはクリックして選択）します。`files` フォルダにあらかじめファイルを置いてある場合は、「配置済みのExcelから選ぶ」ボタンから選んで開くこともできます（後述）。
+2. 表示された画面に、SVSログの `.xlsx` ファイルをドラッグ＆ドロップ（またはクリックして選択）します。`files` フォルダに置かれているファイルがあれば、その下に一覧が自動で表示され、クリックするだけで開けます（後述）。
 3. 4つのタブでデータを確認できます。
    - **概況**: 全体のKPIと、Capitol（首都拠点）を巡る攻防の時間帯別アクティビティ
    - **連盟ランキング**: 連盟ごとの総合貢献度スコア（算出方法は画面に常時表示されています）と詳細データ表
@@ -57,18 +57,31 @@ This file is written in Japanese / English / Chinese. Scroll to your language's 
 
 **役割で比較する場合の注意**: このツールは「誰が拠点防衛・基地攻撃・瓦礫解体のどれを担当していたか」までは把握できません。総合スコアは役割を問わず幅広く活動した人ほど高くなるため、担当が決まっているメンバー同士を比べる場合は、総合スコアではなく担当分野に対応する列（例：攻撃担当なら「攻撃スコア」列）でソートして比較してください。
 
-### 配置済みのExcelから選ぶ機能（省略可）
+### 配置済みのExcelから選ぶ機能（省略可・GitHub + Cloudflare Pages運用向け）
 
-複数のSVSログをまとめて置いておき、その場で選んで開けるようにする機能です。
+複数のSVSログをこのリポジトリに置いておき、アップロード画面から選んで開けるようにする機能です。**GitHubリポジトリをprivate（非公開）にしたまま、Cloudflare Pagesで公開しているサイト自体はURLを知っていれば誰でも見られる**、という構成を想定しています。ソースコードや `files` フォルダの中身をGitHub経由で誰にでも見られる状態にはしたくないが、サイトへのログイン機能までは要らない、という場合の設定です。
 
-1. このフォルダ直下にある `files` フォルダに、`.xlsx` ファイルを好きなだけコピーします（サブフォルダ不可、直下に置いてください）。
-2. アップロード画面の「配置済みのExcelから選ぶ」ボタンを押すと、フォルダ選択ダイアログが開きます。ここで **`files` フォルダそのものを選択**してください。
-3. `files` フォルダ内の `.xlsx` 一覧がボタンで表示されるので、見たいものをクリックすれば読み込まれます。
-4. ファイルを追加・削除したいときは、`files` フォルダの中身を直接編集するだけです（スクリプトの実行は不要です）。次にツールを開いたときに、ボタンを押して `files` フォルダを選び直せば最新の一覧が反映されます。
+裏側では、Cloudflareの「Pages Functions」というサーバー側の小さな中継プログラム（`functions/api/files/`）が、GitHubのアクセストークンを使って**サーバー側だけで**privateリポジトリの中身を読みに行き、その結果をブラウザに渡しています。アクセストークンはブラウザ側のコードには一切出てこないので、サイトを見た人がトークンを盗み見ることはできません。
 
-**なぜ毎回フォルダを選び直す必要があるのか**：`index.html` をダブルクリックして開く形式（`file://`）では、ブラウザの仕様上、ページ側からフォルダの中身を勝手に読み取ることはできません（セキュリティ上の制限です）。フォルダ選択ダイアログでの一度の操作が、「このフォルダの中身をこのページに渡してよい」という明示的な許可になります。
+**初回だけ必要な設定（あなたご自身の作業）**
 
-`files` フォルダの中身（`.xlsx`）は `.gitignore` で除外されており、gitにはコミットされません。他連盟のプレイヤー名なども含む実データをフォルダごと配布するかどうかは、その都度ご判断ください。
+1. **GitHubでアクセストークンを発行する**
+   - GitHub右上のアイコン → **Settings** → 左メニュー最下部 **Developer settings** → **Personal access tokens** → **Fine-grained tokens** → **Generate new token**
+   - "Repository access" は **Only select repositories** を選び、`lastwar_visualizer` を選択
+   - "Permissions" → "Repository permissions" の **Contents** を **Read-only** に設定（他の権限は不要です）
+   - 有効期限を設定して発行し、表示されたトークン（`github_pat_...`）をコピーしておきます（**この画面を閉じると二度と表示されません**）
+2. **Cloudflare Pages側にトークンを登録する**
+   - Cloudflareダッシュボード → **Workers & Pages** → このプロジェクトを選択 → **Settings** → **Environment variables**
+   - "Add variable" で 変数名を `GITHUB_TOKEN`、値に手順1でコピーしたトークンを入力し、種類は **Secret**（暗号化）を選択して保存
+   - Production環境に追加してください（Preview環境でも使う場合はそちらにも追加）
+   - 保存後、反映されていなければ "Retry deployment" などで再デプロイしてください
+3. **GitHubリポジトリをprivateに切り替える**
+   - リポジトリの **Settings** → 一番下の **Danger Zone** → **Change repository visibility** → **Private**
+   - Cloudflare PagesはGitHub連携（GitHub Appのアクセス権）経由でprivateリポジトリからもビルド・デプロイできるため、これだけではデプロイは止まりません
+
+設定後、`files` フォルダに `.xlsx` を置いて push すれば、次のデプロイ後にアップロード画面へ自動的に一覧表示されます（ボタンを押したりフォルダを選んだりする操作は不要です）。もしリポジトリ名を変更・フォークした場合は、`functions/api/files/index.js` と `functions/api/files/[name].js` の中の `OWNER` / `REPO` の値も書き換えてください。
+
+**うまく表示されないときは**：ブラウザの開発者ツールのコンソールに `Could not load the repo's files/ listing` という警告が出ていないか確認してください。多くの場合、`GITHUB_TOKEN` が未設定・入力ミス、または再デプロイがまだ、という原因です。この機能が使えなくても、通常のドラッグ＆ドロップでのアップロードには影響しません。
 
 ### 注意点
 
@@ -88,7 +101,7 @@ Upload an in-game SVS (State vs State) war log (Excel file) and this tool visual
 ### How to use
 
 1. **Double-click `index.html`** to open it in your browser (Chrome, Edge, Safari, etc.). No installation or server needed.
-2. Drag and drop your SVS log `.xlsx` file onto the page (or click to choose a file). If a bundled preset is available, an "Open ..." button appears below the drop zone for one-click loading (see below).
+2. Drag and drop your SVS log `.xlsx` file onto the page (or click to choose a file). If the repo's `files` folder has any `.xlsx` files, they're listed automatically below the drop zone — click one to load it (see below).
 3. Explore the data across 4 tabs:
    - **Overview**: headline KPIs and capitol contest activity over time
    - **Alliance ranking**: each alliance's contribution score (the formula is always shown on screen) plus a sortable detail table
@@ -129,18 +142,21 @@ The formula is always spelled out in the relevant tab of the app itself.
 
 **A caution when comparing by role**: this tool has no way to know who was assigned to structure defense vs. base attacks vs. rubble clearing. The total score rewards broad activity across all 3 axes regardless of role, so when comparing members with a specific assignment, sort by that axis's own column (e.g. "attack score" for someone assigned to attack) instead of the total score.
 
-### "Choose from prepared Excel files" option (optional)
+### "Choose from prepared Excel files" option (optional, for a GitHub + Cloudflare Pages deployment)
 
-Keep several SVS logs on hand and pick one to open on the spot:
+Keep several SVS logs in this repo and pick one to open from the upload screen. This setup keeps the **GitHub repo private** (source code and the contents of `files/` aren't browsable by the public on GitHub) while the **deployed Cloudflare Pages site stays open** to anyone with its URL — no login wall.
 
-1. Copy as many `.xlsx` files as you like directly into the `files` folder next to this README (no subfolders — put them right inside `files`).
-2. On the upload screen, click "Choose from prepared Excel files." A folder picker dialog opens — select the **`files` folder itself**.
-3. Every `.xlsx` inside `files` appears as a button; click one to load it.
-4. To add or remove files, just edit the contents of the `files` folder directly — no script to run. Next time you open the tool, click the button and re-select `files` to see the updated list.
+Under the hood, a small Cloudflare Pages Function (`functions/api/files/`) reads the private repo server-side using a GitHub token, and hands the result to the browser. The token itself never reaches client-side JS, so it's never visible to anyone viewing the deployed site.
 
-**Why you have to re-pick the folder every time**: when this page is opened via file:// (double-clicking index.html), browsers deliberately give it no way to read a folder's contents on its own — that's a security boundary, not a limitation of this tool. The one-time folder-picker action is what explicitly grants that folder's contents to the page.
+**One-time setup (you'll need to do this yourself)**
 
-`.xlsx` files inside `files/` are excluded from git via `.gitignore`. Since anyone you hand the folder to can see whatever's inside `files/`, decide each time whether it's appropriate to include real data (with other alliances' player names, etc.) when you share it.
+1. **Create a GitHub token**: GitHub avatar menu → **Settings** → **Developer settings** (bottom of the left sidebar) → **Personal access tokens** → **Fine-grained tokens** → **Generate new token**. Set "Repository access" to **Only select repositories** → `lastwar_visualizer`; under "Permissions" → "Repository permissions," set **Contents** to **Read-only**. Generate it and copy the token (`github_pat_...`) — you won't be able to see it again.
+2. **Add it to Cloudflare Pages**: Cloudflare dashboard → **Workers & Pages** → this project → **Settings** → **Environment variables** → Add variable named `GITHUB_TOKEN`, paste the token as the value, and mark it **Secret**. Add it to the Production environment (and Preview too, if you use that). Redeploy if it doesn't pick it up automatically.
+3. **Make the GitHub repo private**: repo **Settings** → **Danger Zone** → **Change repository visibility** → **Private**. Cloudflare Pages can still build and deploy from a private repo via its GitHub App integration, so this won't break your deployment.
+
+Once that's set up, just drop `.xlsx` files into `files/` and push — they show up on the upload screen automatically after the next deploy. If you fork or rename the repo, also update `OWNER`/`REPO` in `functions/api/files/index.js` and `functions/api/files/[name].js`.
+
+**If the list doesn't show up**: check the browser console for a `Could not load the repo's files/ listing` warning — usually it means `GITHUB_TOKEN` isn't set (or has a typo) or the site hasn't redeployed since you added it. Regular drag-and-drop upload keeps working either way.
 
 ### Notes
 
@@ -201,18 +217,21 @@ Keep several SVS logs on hand and pick one to open on the spot:
 
 **按职责比较时的注意事项**：本工具无法得知谁被分配负责据点防守、基地攻击还是瓦砾清除。综合评分对不分职责、广泛参与各类活动的人更有利，因此在比较被分配了特定职责的成员时，请按其对应职责的那一列排序（例如负责攻击的成员请按"攻击评分"列排序），而不是用综合评分。
 
-### "从已放置的Excel中选择"功能（可选）
+### "从已放置的Excel中选择"功能（可选，适用于GitHub + Cloudflare Pages部署）
 
-可以预先放置多份SVS日志，随时选择打开：
+可以将多份SVS日志放在本仓库中，在上传界面直接选择打开。此方案可以让 **GitHub仓库保持private（非公开）**（源代码和 `files/` 中的内容不会被公开浏览），同时 **部署在Cloudflare Pages上的网站本身仍对拥有该URL的任何人开放**——无需登录。
 
-1. 将任意数量的 `.xlsx` 文件直接复制到本README旁边的 `files` 文件夹中（不支持子文件夹，请直接放在 `files` 下）。
-2. 在上传界面点击"从已放置的Excel中选择"，会弹出文件夹选择对话框，请在其中**选择 `files` 文件夹本身**。
-3. `files` 文件夹内的所有 `.xlsx` 会以按钮形式列出，点击即可加载。
-4. 需要增删文件时，直接编辑 `files` 文件夹的内容即可，无需运行任何脚本。下次打开工具时，点击按钮重新选择一次 `files` 文件夹，即可看到最新列表。
+其原理是：一个小型的Cloudflare Pages Function（`functions/api/files/`）在服务器端使用GitHub令牌读取私有仓库的内容，再把结果返回给浏览器。该令牌本身不会出现在客户端JS中，因此浏览网站的任何人都无法看到它。
 
-**为什么每次都需要重新选择文件夹**：当本页面以 file:// 方式打开（双击index.html）时，出于浏览器的安全限制，页面本身无法自行读取文件夹内容——这是浏览器的安全边界，并非本工具的限制。通过文件夹选择对话框进行的这一次操作，才是明确"允许该文件夹内容传递给本页面"的授权行为。
+**首次需要您自行完成的设置**
 
-`files/` 文件夹内的 `.xlsx` 文件已通过 `.gitignore` 排除，不会被提交到git。由于收到此文件夹的任何人都能看到 `files/` 里的内容，请每次自行判断分享时是否适合包含其他联盟玩家名等真实数据。
+1. **在GitHub创建访问令牌**：GitHub头像菜单 → **Settings** → 左侧菜单最下方 **Developer settings** → **Personal access tokens** → **Fine-grained tokens** → **Generate new token**。"Repository access" 选择 **Only select repositories**，选中 `lastwar_visualizer`；在 "Permissions" → "Repository permissions" 中，将 **Contents** 设为 **Read-only**。生成后复制令牌（`github_pat_...`）——关闭页面后将无法再次查看。
+2. **将令牌添加到Cloudflare Pages**：Cloudflare控制台 → **Workers & Pages** → 选择该项目 → **Settings** → **Environment variables** → 添加变量，名称为 `GITHUB_TOKEN`，值为刚才复制的令牌，类型选择 **Secret**（加密）。添加到Production环境（如果也使用Preview环境，请一并添加）。如未自动生效，请重新部署一次。
+3. **将GitHub仓库设为private**：仓库 **Settings** → 最下方 **Danger Zone** → **Change repository visibility** → **Private**。Cloudflare Pages通过其GitHub App的授权仍可从私有仓库构建和部署，因此不会影响部署。
+
+设置完成后，只需将 `.xlsx` 放入 `files/` 并push，下次部署后就会自动出现在上传界面的列表中（无需点击按钮或选择文件夹）。如果fork或重命名了本仓库，请同时修改 `functions/api/files/index.js` 和 `functions/api/files/[name].js` 中的 `OWNER`/`REPO`。
+
+**如果列表没有显示**：请检查浏览器控制台是否有 `Could not load the repo's files/ listing` 的警告，通常是 `GITHUB_TOKEN` 未设置（或输入有误），或添加后尚未重新部署。即使该功能不可用，也不影响正常的拖放上传。
 
 ### 注意事项
 
