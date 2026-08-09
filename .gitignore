@@ -1,0 +1,21 @@
+# Real SVS log files you drop here for the "choose from prepared Excel files" button on
+# the upload screen (see README). These can contain other alliances' player names, etc.,
+# so they're never committed by default — whether to ship them with the folder is a
+# per-distribution decision, not something git should decide for you.
+# files/*.xlsx
+
+# Claude Code — local project settings/permissions, machine-specific.
+.claude/
+
+# VSCode / JetBrains — local editor/workspace settings, machine-specific.
+.vscode/
+.idea/
+
+# macOS / Windows filesystem cruft.
+.DS_Store
+Thumbs.db
+
+# Editor swap/backup files.
+*.swp
+*.swo
+*~

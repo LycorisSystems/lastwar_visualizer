@@ -146,6 +146,22 @@ main { max-width: 1280px; margin: 0 auto; padding: 20px; }
 .dropzone p { color: var(--text-secondary); margin: 6px 0; }
 .dropzone .hint { color: var(--text-muted); font-size: 12px; }
 #file-input { display: none; }
+.preset-section { margin-top: 18px; text-align: center; }
+.preset-divider {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+  color: var(--text-muted); font-size: 12px;
+}
+.preset-divider::before, .preset-divider::after { content: ""; flex: 1; height: 1px; background: var(--grid); }
+.preset-section .hint { margin: 8px 0 0; text-align: center; }
+#files-list {
+  display: flex; flex-direction: column; gap: 6px; align-items: stretch;
+  max-width: 420px; margin: 12px auto 0; text-align: left;
+}
+.file-list-item {
+  display: block; width: 100%; text-align: left;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
 .upload-notes { margin-top: 20px; color: var(--text-secondary); font-size: 13px; }
 .upload-notes ul { padding-left: 18px; }
 #upload-error {

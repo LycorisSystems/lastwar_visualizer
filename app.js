@@ -47,6 +47,10 @@ const I18N = {
     "upload.invalidFile": "xlsx形式のファイルを選択してください。",
     "upload.readError": "ファイルの読み込みに失敗しました。",
     "upload.parseError": "Excelの解析に失敗しました: {msg}",
+    "upload.presetDividerText": "または",
+    "upload.pickFolderButton": "配置済みのExcelから選ぶ",
+    "upload.pickFolderHint": "この中の \"files\" フォルダに .xlsx を置いておくと、ここから選んで開けます。ボタンを押したら出てくるフォルダ選択画面で \"files\" フォルダを選んでください（ブラウザの仕様上、フォルダの中身は自動では読み取れません）。",
+    "upload.pickFolderEmpty": "選択したフォルダに .xlsx ファイルが見つかりませんでした。",
     "filters.side": "陣営",
     "filters.sideAll": "すべて",
     "filters.sideAria": "陣営フィルター",
@@ -160,6 +164,10 @@ const I18N = {
     "upload.invalidFile": "Please choose a .xlsx file.",
     "upload.readError": "Failed to read the file.",
     "upload.parseError": "Failed to parse the Excel file: {msg}",
+    "upload.presetDividerText": "or",
+    "upload.pickFolderButton": "Choose from prepared Excel files",
+    "upload.pickFolderHint": "Put .xlsx files in the \"files\" folder next to this page to pick from them here. When the folder picker opens, select that \"files\" folder (browsers don't allow reading a folder's contents without this one-time selection).",
+    "upload.pickFolderEmpty": "No .xlsx files found in the selected folder.",
     "filters.side": "Side",
     "filters.sideAll": "All",
     "filters.sideAria": "Side filter",
@@ -273,6 +281,10 @@ const I18N = {
     "upload.invalidFile": "请选择 .xlsx 格式的文件。",
     "upload.readError": "文件读取失败。",
     "upload.parseError": "Excel解析失败：{msg}",
+    "upload.presetDividerText": "或",
+    "upload.pickFolderButton": "从已放置的Excel中选择",
+    "upload.pickFolderHint": "将 .xlsx 文件放入本页面旁边的 \"files\" 文件夹中，即可在此选择打开。点击按钮后弹出的文件夹选择框中，请选择该 \"files\" 文件夹（出于浏览器限制，无法在不进行此选择操作的情况下自动读取文件夹内容）。",
+    "upload.pickFolderEmpty": "所选文件夹中未找到 .xlsx 文件。",
     "filters.side": "阵营",
     "filters.sideAll": "全部",
     "filters.sideAria": "阵营筛选",
@@ -513,17 +525,60 @@ function handleFile(file) {
   }
   const reader = new FileReader();
   reader.onerror = () => showUploadError(t("upload.readError"));
-  reader.onload = (e) => {
-    try {
-      const wb = XLSX.read(e.target.result, { type: "array", cellDates: true });
-      const raw = normalizeWorkbook(wb);
-      bootDashboard(raw, file.name);
-    } catch (err) {
-      console.error(err);
-      showUploadError(t("upload.parseError", { msg: err && err.message ? err.message : String(err) }));
-    }
-  };
+  reader.onload = (e) => loadWorkbookArrayBuffer(e.target.result, file.name);
   reader.readAsArrayBuffer(file);
+}
+
+/** Shared by both manual upload (via handleFile/FileReader above) and the bundled-preset
+ *  button below — same parse-and-boot path either way, just a different source for the
+ *  raw bytes. */
+function loadWorkbookArrayBuffer(arrayBuffer, fileName) {
+  try {
+    const wb = XLSX.read(arrayBuffer, { type: "array", cellDates: true });
+    const raw = normalizeWorkbook(wb);
+    bootDashboard(raw, fileName);
+  } catch (err) {
+    console.error(err);
+    showUploadError(t("upload.parseError", { msg: err && err.message ? err.message : String(err) }));
+  }
+}
+
+/** "Open a pre-placed Excel file" shortcut on the upload screen: pick a folder (e.g. this
+ *  project's own files/ folder) and click any .xlsx found inside it.
+ *
+ *  Why a folder-picker button rather than just reading files/ automatically: this page is
+ *  opened via file:// (double-clicking index.html), and browsers deliberately give a
+ *  file:// page no way to enumerate a folder's contents on its own — fetch()/XHR can't
+ *  read local files under file://, and there's no directory-listing API at all — for the
+ *  obvious reason that a random HTML file sitting in someone's file system shouldn't be
+ *  able to silently read whatever else is in that folder. The browser's native folder
+ *  picker (<input webkitdirectory>) is the sanctioned way around that: it requires one
+ *  explicit user action (choosing the folder), and in exchange hands the page real File
+ *  objects for everything inside — which FileReader can then read directly, no fetch
+ *  involved, exactly like a normal single-file upload. That "choose the folder" click is
+ *  needed again each time the page is freshly opened; browsers don't let a page remember
+ *  a folder choice across reloads without a heavier, Chrome-only API. */
+const folderInput = $("#folder-input");
+const filesList = $("#files-list");
+$("#btn-pick-folder")?.addEventListener("click", () => folderInput.click());
+folderInput?.addEventListener("change", (e) => {
+  const xlsxFiles = Array.from(e.target.files || [])
+    .filter(f => /\.xlsx$/i.test(f.name))
+    .sort((a, b) => a.name.localeCompare(b.name, NUMBER_LOCALES[currentLang] || "ja"));
+  renderFilesList(xlsxFiles);
+});
+
+function renderFilesList(xlsxFiles) {
+  filesList.innerHTML = "";
+  if (!xlsxFiles.length) {
+    filesList.appendChild(el("div", { class: "note" }, [t("upload.pickFolderEmpty")]));
+    return;
+  }
+  xlsxFiles.forEach(file => {
+    const btn = el("button", { class: "btn file-list-item" }, [file.name]);
+    btn.addEventListener("click", () => handleFile(file));
+    filesList.appendChild(btn);
+  });
 }
 
 /* ================= SHEET PARSING ================= */

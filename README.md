@@ -16,16 +16,17 @@ This file is written in Japanese / English / Chinese. Scroll to your language's 
 ### 使い方
 
 1. **`index.html` をダブルクリックしてブラウザで開く**（Chrome / Edge / Safari など）。インストールや専用サーバーは不要です。
-2. 表示された画面に、SVSログの `.xlsx` ファイルをドラッグ＆ドロップ（またはクリックして選択）します。
+2. 表示された画面に、SVSログの `.xlsx` ファイルをドラッグ＆ドロップ（またはクリックして選択）します。`files` フォルダにあらかじめファイルを置いてある場合は、「配置済みのExcelから選ぶ」ボタンから選んで開くこともできます（後述）。
 3. 4つのタブでデータを確認できます。
    - **概況**: 全体のKPIと、Capitol（首都拠点）を巡る攻防の時間帯別アクティビティ
    - **連盟ランキング**: 連盟ごとの総合貢献度スコア（算出方法は画面に常時表示されています）と詳細データ表
    - **戦場マップ**: プレイヤーがテレポートで入城した座標を陣営・連盟ごとに色分け表示
-   - **メンバー参加度（リーダー向け）**: 連盟を選んでメンバー個人の活動を一覧表示。上位10%は「MVP候補」、活動記録0件は「要フォロー」として自動で色分けされます。CSVエクスポートも可能です。
-4. 画面右上の **陣営フィルター** と **フォーカス連盟** で表示を絞り込めます。
+   - **メンバー参加度（リーダー向け）**: 連盟を選んでメンバー個人の活動を一覧表示。連盟選択で「全員」を選ぶと、表示中の全連盟のメンバーを横断してソートできます（サーバー全体のPvP・瓦礫解体ランキングとしても使えます）。CSVエクスポートも可能です。
+4. 画面上部の **陣営フィルター** と **フォーカス連盟** で表示を絞り込めます。
 5. 画面右上の **日本語 / English / 中文** ボタンで表示言語を切り替えられます（次回開いたときも記憶されます）。
 6. 🌓ボタンでダーク/ライト表示を切り替えられます。
 7. 別のファイルを見たい場合は「別のファイルを読み込む」ボタンから再アップロードしてください。
+8. 各テーブルは列見出しをクリックして並び替えできます。ソート中の列は自動的に左寄せに移動します。
 
 ### 対応しているExcelの形式
 
@@ -33,23 +34,47 @@ This file is written in Japanese / English / Chinese. Scroll to your language's 
 
 - `movements`（移動ログ）
 - `structures`（施設防衛・攻撃ログ）
-- `base_hits`（基地攻撃ログ）
+- `base_hits`（基地攻撃ログ。`target_x`/`target_y` 列（攻撃対象の座標）があると攻撃スコアの距離重み付けが有効になります）
 - `rubbles`（瓦礫解体ログ）
 - `teleports`（連盟別テレポート人数の集計）
 - `marches`（連盟別マーチ数の集計。シート名に「marches」を含んでいれば自動認識）
 
 ### 連盟スコア・個人スコアの算出方法
 
-- **連盟スコア** ＝ 拠点アクション数40% ＋ 基地攻撃数25% ＋ 瓦礫解体数20% ＋ 参加人数15%（各項目は表示中の連盟内の最大値を100%として正規化）。拠点アクションは capitol と canon×4 を種別を問わず均等に合算しており、特定の施設だけを優遇していません。テレポート回数は参加のアクティブさの指標であり、戦闘への貢献とは別軸のためスコアには含めていません。
-- **個人の総合活動スコア** ＝ 拠点アクション（防衛/増援＋攻撃、全施設合計） ＋ 基地攻撃数 ＋ 瓦礫解体数×2。こちらもテレポート回数・移動回数はスコアに含めず、参考情報として表示するのみです。
+連盟スコア・個人の総合活動スコアはどちらも同じ考え方です。
 
-いずれの計算式も、画面上の該当タブに常に日本語で明記されています。
+```
+総合スコア = 拠点アクション数 + 攻撃スコア + 瓦礫解体数
+```
+
+- **拠点アクション数**: capitol・canon×4への駐屯/増援/攻撃の合計回数。施設の種別は問わず均等に扱います。
+- **攻撃スコア**: 基地攻撃1件ごとに「攻撃対象がcapitolに近いほど高い」重みをつけて合計したもの（勝敗は問いません）。distance = 対象座標とcapitol座標の直線距離、weight = max(0, 1 − distance ÷ ファイル内の最大距離)。遠くの無防備な基地ばかり狙って数字を稼ぐケースを補正します。
+- **瓦礫解体数**: 完了した解体件数（現状のログ形式には座標データがないため、距離は考慮していません）。
+
+上記3項目はそれぞれ「ファイル内の上位3者（連盟／プレイヤー）の平均を100点」として換算してから合計します（1位が突出している場合は100点を超えることもあります）。参加人数はスコアの項目には含めていません — 連盟スコアはメンバー全員分の値をそのまま合計したものなので、参加人数が多い連盟ほど自然に高くなります。
+
+計算式は画面上の該当タブに常に明記されています。
+
+**役割で比較する場合の注意**: このツールは「誰が拠点防衛・基地攻撃・瓦礫解体のどれを担当していたか」までは把握できません。総合スコアは役割を問わず幅広く活動した人ほど高くなるため、担当が決まっているメンバー同士を比べる場合は、総合スコアではなく担当分野に対応する列（例：攻撃担当なら「攻撃スコア」列）でソートして比較してください。
+
+### 配置済みのExcelから選ぶ機能（省略可）
+
+複数のSVSログをまとめて置いておき、その場で選んで開けるようにする機能です。
+
+1. このフォルダ直下にある `files` フォルダに、`.xlsx` ファイルを好きなだけコピーします（サブフォルダ不可、直下に置いてください）。
+2. アップロード画面の「配置済みのExcelから選ぶ」ボタンを押すと、フォルダ選択ダイアログが開きます。ここで **`files` フォルダそのものを選択**してください。
+3. `files` フォルダ内の `.xlsx` 一覧がボタンで表示されるので、見たいものをクリックすれば読み込まれます。
+4. ファイルを追加・削除したいときは、`files` フォルダの中身を直接編集するだけです（スクリプトの実行は不要です）。次にツールを開いたときに、ボタンを押して `files` フォルダを選び直せば最新の一覧が反映されます。
+
+**なぜ毎回フォルダを選び直す必要があるのか**：`index.html` をダブルクリックして開く形式（`file://`）では、ブラウザの仕様上、ページ側からフォルダの中身を勝手に読み取ることはできません（セキュリティ上の制限です）。フォルダ選択ダイアログでの一度の操作が、「このフォルダの中身をこのページに渡してよい」という明示的な許可になります。
+
+`files` フォルダの中身（`.xlsx`）は `.gitignore` で除外されており、gitにはコミットされません。他連盟のプレイヤー名なども含む実データをフォルダごと配布するかどうかは、その都度ご判断ください。
 
 ### 注意点
 
 - ログの収集ツール側の都合で、まれにプレイヤー名（例: 「6/3」のような数字と記号だけの名前）がExcel上で日付として自動変換されてしまうことがあります。その場合は `(日付化した名前:2026/6/3)` のように表示されます。元の名前はファイルから復元できないため、心当たりのあるメンバーがいれば教えてあげてください。
 - データは1日単位のSVSイベントを想定しています。タイムスタンプが日付をまたぐ場合、時刻のみで集計されることがあります。
-- `index.html` / `styles.css` / `app.js` / `vendor/xlsx.full.min.js` の4点はセットで動作します。フォルダ構成を保ったまま配布してください（`vendor` フォルダの中身も必要です）。
+- `index.html` / `styles.css` / `app.js` / `vendor/xlsx.full.min.js` はセットで動作します。フォルダ構成を保ったまま配布してください（`vendor` フォルダの中身も必要です）。`files/` フォルダは「配置済みのExcelから選ぶ」機能を使う場合のみ必要です。
 
 ---
 ---
@@ -63,16 +88,17 @@ Upload an in-game SVS (State vs State) war log (Excel file) and this tool visual
 ### How to use
 
 1. **Double-click `index.html`** to open it in your browser (Chrome, Edge, Safari, etc.). No installation or server needed.
-2. Drag and drop your SVS log `.xlsx` file onto the page (or click to choose a file).
+2. Drag and drop your SVS log `.xlsx` file onto the page (or click to choose a file). If a bundled preset is available, an "Open ..." button appears below the drop zone for one-click loading (see below).
 3. Explore the data across 4 tabs:
    - **Overview**: headline KPIs and capitol contest activity over time
    - **Alliance ranking**: each alliance's contribution score (the formula is always shown on screen) plus a sortable detail table
    - **Battlefield map**: teleport-in coordinates plotted and colored by side/alliance
-   - **Member participation (for leaders)**: pick an alliance to see a sortable table of every member's activity. The top 10% are auto-flagged as "MVP candidates" and anyone with zero recorded activity is flagged as "needs follow-up." CSV export is available.
+   - **Member participation (for leaders)**: pick an alliance to see a sortable table of every member's activity. Choose "Everyone" in the alliance dropdown to sort across every alliance currently shown at once (doubles as a server-wide PvP / rubble leaderboard). CSV export is available.
 4. Use the **side filter** and **focus alliance** controls at the top to narrow down what's shown.
 5. Use the **日本語 / English / 中文** buttons at the top right to switch language (your choice is remembered for next time).
 6. Use the 🌓 button to toggle dark/light mode.
 7. Click "Load another file" to upload a different log.
+8. Click any table's column header to sort by it — the sorted column moves to the left automatically so you don't have to scroll to check its values.
 
 ### Expected Excel format
 
@@ -80,23 +106,47 @@ The file should contain these sheets (sheet names are matched loosely, e.g. "mov
 
 - `movements` — player movement log
 - `structures` — structure defense/attack log
-- `base_hits` — base attack log
+- `base_hits` — base attack log (a `target_x`/`target_y` column pair, the attack's target coordinates, enables the attack score's distance weighting)
 - `rubbles` — rubble-clearing log
 - `teleports` — per-alliance teleport-in headcount summary
 - `marches` — per-alliance march-count summary (any sheet name containing "marches" is recognized)
 
 ### How the scores are calculated
 
-- **Alliance score** = structure actions 40% + base attacks 25% + rubble clears 20% + participants 15% (each component normalized to the highest value among the alliances currently shown). Structure actions combine capitol and all 4 canons equally — no structure gets special treatment. Teleport-in count reflects activity/presence rather than combat contribution, so it's excluded from the score.
-- **Per-player total activity score** = structure actions (defense/reinforce + attack, all structures combined) + base attacks + rubble clears×2. Teleport-in and relocate counts are excluded from the score and shown only for reference.
+Both the alliance score and the per-player total activity score work the same way:
 
-Both formulas are always spelled out in the relevant tab of the app itself.
+```
+Total score = structure actions + attack score + rubble clears
+```
+
+- **Structure actions**: total garrison/reinforce/attack actions on capitol and all 4 canons combined, weighted equally regardless of which structure.
+- **Attack score**: the sum, over every landed base attack (win or lose), of a weight that's higher the closer the target was to the capitol. distance = straight-line distance between the target's coordinates and the capitol's; weight = max(0, 1 − distance ÷ the farthest recorded target distance in the file). This corrects for padding your numbers by hitting undefended bases far from the front line.
+- **Rubble clears**: completed clears (not distance-weighted — this log format has no coordinates for where a clear happened).
+
+Each of the 3 is scaled so 100 = the average of the top 3 (alliances or players) in the file on that one axis, then summed (can exceed 100 on an axis if #1 is well clear of #2/#3). Participant count is not a scored component — an alliance's score is just the sum of its own members, so an alliance with more active members scores higher automatically.
+
+The formula is always spelled out in the relevant tab of the app itself.
+
+**A caution when comparing by role**: this tool has no way to know who was assigned to structure defense vs. base attacks vs. rubble clearing. The total score rewards broad activity across all 3 axes regardless of role, so when comparing members with a specific assignment, sort by that axis's own column (e.g. "attack score" for someone assigned to attack) instead of the total score.
+
+### "Choose from prepared Excel files" option (optional)
+
+Keep several SVS logs on hand and pick one to open on the spot:
+
+1. Copy as many `.xlsx` files as you like directly into the `files` folder next to this README (no subfolders — put them right inside `files`).
+2. On the upload screen, click "Choose from prepared Excel files." A folder picker dialog opens — select the **`files` folder itself**.
+3. Every `.xlsx` inside `files` appears as a button; click one to load it.
+4. To add or remove files, just edit the contents of the `files` folder directly — no script to run. Next time you open the tool, click the button and re-select `files` to see the updated list.
+
+**Why you have to re-pick the folder every time**: when this page is opened via file:// (double-clicking index.html), browsers deliberately give it no way to read a folder's contents on its own — that's a security boundary, not a limitation of this tool. The one-time folder-picker action is what explicitly grants that folder's contents to the page.
+
+`.xlsx` files inside `files/` are excluded from git via `.gitignore`. Since anyone you hand the folder to can see whatever's inside `files/`, decide each time whether it's appropriate to include real data (with other alliances' player names, etc.) when you share it.
 
 ### Notes
 
 - Due to a quirk in how the source log was collected, a player name that looks like a date fragment (e.g. "6/3") can get silently auto-converted into an actual date by Excel. When that happens, the name shows as `(date-mangled name: 2026/6/3)`. The original text can't be recovered from the file — if you recognize who this might be, let them know.
 - The tool assumes a single-day SVS event. If timestamps cross midnight, they may be aggregated by time-of-day only.
-- `index.html`, `styles.css`, `app.js`, and `vendor/xlsx.full.min.js` must stay together in the same folder structure — please distribute the whole folder, including the `vendor` subfolder.
+- `index.html`, `styles.css`, `app.js`, and `vendor/xlsx.full.min.js` must stay together in the same folder structure — please distribute the whole folder, including the `vendor` subfolder. The `files/` folder is only needed if you're using the "choose from prepared Excel files" feature.
 
 ---
 ---
@@ -110,16 +160,17 @@ Both formulas are always spelled out in the relevant tab of the app itself.
 ### 使用方法
 
 1. **双击 `index.html`**，用浏览器打开（Chrome、Edge、Safari 等均可）。无需安装，也无需服务器。
-2. 将SVS日志的 `.xlsx` 文件拖放到页面上（或点击选择文件）。
+2. 将SVS日志的 `.xlsx` 文件拖放到页面上（或点击选择文件）。如果已内置预设数据，拖放区下方会出现「打开……」按钮，一键加载（见下文）。
 3. 可通过4个标签页查看数据：
    - **概况**：整体关键指标，以及围绕Capitol（主城据点）的攻防活跃度随时间的变化
    - **联盟排名**：各联盟的综合贡献度评分（计算方法始终显示在页面上）以及可排序的详细数据表
    - **战场地图**：按阵营/联盟着色显示玩家传送进入战场的坐标
-   - **成员参与度（领导视角）**：选择一个联盟，查看每位成员活动情况的可排序表格。综合活动评分前10%会自动标记为"MVP候选"，活动记录为0的会标记为"需要关注"。支持导出CSV。
+   - **成员参与度（领导视角）**：选择一个联盟，查看每位成员活动情况的可排序表格。联盟下拉框选择「全部」可以跨所有当前显示的联盟一起排序（也可当作服务器整体的PvP/瓦砾清除排行榜使用）。支持导出CSV。
 4. 使用页面上方的**阵营筛选**和**关注联盟**可以缩小显示范围。
 5. 使用右上角的 **日本語 / English / 中文** 按钮切换显示语言（下次打开时会记住您的选择）。
 6. 使用🌓按钮切换深色/浅色主题。
 7. 如需查看其他文件，点击"加载其他文件"重新上传即可。
+8. 点击任意表格的列标题即可按该列排序，排序中的列会自动移到左侧，无需来回滚动查看数值。
 
 ### 支持的Excel格式
 
@@ -127,20 +178,44 @@ Both formulas are always spelled out in the relevant tab of the app itself.
 
 - `movements`（移动日志）
 - `structures`（据点防守/攻击日志）
-- `base_hits`（基地攻击日志）
+- `base_hits`（基地攻击日志。若包含`target_x`/`target_y`列（攻击目标坐标），攻击评分的距离加权将自动生效）
 - `rubbles`（瓦砾清除日志）
 - `teleports`（各联盟传送人数汇总）
 - `marches`（各联盟行军次数汇总，表名中包含"marches"即可识别）
 
 ### 评分计算方法
 
-- **联盟评分** = 据点行动数40% + 基地攻击数25% + 瓦砾清除数20% + 参与人数15%（各项以当前显示联盟中的最大值为100%进行归一化）。据点行动将capitol与canon×4不分种类均等合计，不会特别优待某个据点。传送次数体现的是活跃度而非战斗贡献，因此不计入评分。
-- **个人综合活动评分** = 据点行动（防守/增援+攻击，全部据点合计） + 基地攻击数 + 瓦砾清除数×2。同样，传送次数与移动次数不计入评分，仅作为参考显示。
+联盟评分与个人综合活动评分采用相同的计算方式：
 
-以上两个计算公式均会在应用对应的标签页中始终以文字说明显示。
+```
+综合评分 = 据点行动数 + 攻击评分 + 瓦砾清除数
+```
+
+- **据点行动数**：对capitol与canon×4的驻守/增援/攻击总次数，不分据点种类，一律均等计算。
+- **攻击评分**：对每一次命中的基地攻击（不论输赢），按「目标离capitol越近权重越高」计算后求和。distance = 目标坐标与capitol坐标的直线距离；weight = max(0, 1 − distance ÷ 本文件中记录的最大距离)。用于修正只攻击远离前线的无防守基地来刷数据的情况。
+- **瓦砾清除数**：完成的清除次数（不考虑距离——此日志格式没有记录清除发生的坐标）。
+
+以上3项分别以「本文件中前3名（联盟或玩家）的平均值」定为100分进行换算，再相加（若第1名明显领先第2、3名，该项可能超过100分）。参与人数本身不是评分项目——联盟评分只是把其成员各自的数值直接相加，因此参与人数越多的联盟评分自然越高。
+
+计算公式始终会显示在应用对应的标签页中。
+
+**按职责比较时的注意事项**：本工具无法得知谁被分配负责据点防守、基地攻击还是瓦砾清除。综合评分对不分职责、广泛参与各类活动的人更有利，因此在比较被分配了特定职责的成员时，请按其对应职责的那一列排序（例如负责攻击的成员请按"攻击评分"列排序），而不是用综合评分。
+
+### "从已放置的Excel中选择"功能（可选）
+
+可以预先放置多份SVS日志，随时选择打开：
+
+1. 将任意数量的 `.xlsx` 文件直接复制到本README旁边的 `files` 文件夹中（不支持子文件夹，请直接放在 `files` 下）。
+2. 在上传界面点击"从已放置的Excel中选择"，会弹出文件夹选择对话框，请在其中**选择 `files` 文件夹本身**。
+3. `files` 文件夹内的所有 `.xlsx` 会以按钮形式列出，点击即可加载。
+4. 需要增删文件时，直接编辑 `files` 文件夹的内容即可，无需运行任何脚本。下次打开工具时，点击按钮重新选择一次 `files` 文件夹，即可看到最新列表。
+
+**为什么每次都需要重新选择文件夹**：当本页面以 file:// 方式打开（双击index.html）时，出于浏览器的安全限制，页面本身无法自行读取文件夹内容——这是浏览器的安全边界，并非本工具的限制。通过文件夹选择对话框进行的这一次操作，才是明确"允许该文件夹内容传递给本页面"的授权行为。
+
+`files/` 文件夹内的 `.xlsx` 文件已通过 `.gitignore` 排除，不会被提交到git。由于收到此文件夹的任何人都能看到 `files/` 里的内容，请每次自行判断分享时是否适合包含其他联盟玩家名等真实数据。
 
 ### 注意事项
 
 - 由于日志采集工具的原因，极少数情况下，形似日期的玩家名字（例如"6/3"）可能会被Excel自动识别并转换为真实日期。此时会显示为 `（被识别为日期的名字：2026/6/3）`。原始名字无法从文件中恢复，如果您认得这可能是哪位成员，请提醒对方。
 - 本工具假定数据为单日SVS活动。如时间戳跨越午夜，可能仅按时间（不含日期）进行汇总。
-- `index.html`、`styles.css`、`app.js`、`vendor/xlsx.full.min.js` 这四者需要保持在同一文件夹结构下才能正常工作，请连同 `vendor` 子文件夹一起分发整个文件夹。
+- `index.html`、`styles.css`、`app.js`、`vendor/xlsx.full.min.js` 这四者需要保持在同一文件夹结构下才能正常工作，请连同 `vendor` 子文件夹一起分发整个文件夹。`files/` 文件夹仅在使用"从已放置的Excel中选择"功能时才需要。
