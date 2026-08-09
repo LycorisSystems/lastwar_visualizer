@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SVS War Report Visualizer</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <h1 data-i18n="app.title">SVS 戦争レポート ビジュアライザー</h1>
+  <span class="subtitle" id="header-subtitle" data-i18n="header.subtitleDefault">Excelをアップロードして開始</span>
+  <div class="header-spacer"></div>
+  <span class="segmented" id="lang-switch" role="group" aria-label="Language"></span>
+  <div class="header-controls" id="header-controls" hidden>
+    <button class="btn" id="btn-reload" data-i18n="header.reload">別のファイルを読み込む</button>
+    <button class="btn" id="btn-theme" data-i18n-title="header.themeToggle" aria-label="表示テーマを切り替え" title="表示テーマを切り替え">🌓</button>
+  </div>
+</header>
+
+<main>
+
+  <section id="upload-screen">
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" data-i18n-attr-aria-label="upload.dropzoneAria" aria-label="Excelファイルを選択してアップロード">
+      <h2 data-i18n="upload.title">戦争データ (.xlsx) をアップロード</h2>
+      <p data-i18n="upload.dragHint">ここにファイルをドラッグ＆ドロップ、またはクリックして選択してください。</p>
+      <p class="hint" data-i18n="upload.formatHint">movements / structures / base_hits / rubbles / teleports / marches シートを含む集計済みSVSログを想定しています。</p>
+      <input type="file" id="file-input" accept=".xlsx" />
+    </div>
+    <div id="upload-error"></div>
+    <div class="upload-notes">
+      <strong data-i18n="upload.notesTitle">このツールについて</strong>
+      <ul>
+        <li data-i18n="upload.note1">すべての処理はブラウザ内で完結します。ファイルはどこにも送信されません。</li>
+        <li data-i18n="upload.note2">連盟ごとの貢献度・参加率のランキングと、連盟内メンバーの活動状況を可視化します。</li>
+        <li data-i18n="upload.note3">データは1日単位のSVSイベントを想定しています（タイムスタンプが日付を跨ぐ場合、時刻のみで集計されることがあります）。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="dashboard" hidden>
+
+    <div class="filter-row" id="global-filters">
+      <label>
+        <span data-i18n="filters.side">陣営</span>
+        <span class="segmented" id="side-filter" role="group" aria-label="陣営フィルター"></span>
+      </label>
+      <label>
+        <span data-i18n="filters.focusAlliance">フォーカス連盟</span>
+        <select id="focus-alliance"></select>
+      </label>
+      <div class="header-spacer"></div>
+      <span class="note" id="filter-summary"></span>
+    </div>
+
+    <nav class="tabs" role="tablist" aria-label="表示切り替え">
+      <button class="tab-btn" role="tab" data-tab="overview" aria-selected="true" data-i18n="tabs.overview">概況</button>
+      <button class="tab-btn" role="tab" data-tab="ranking" aria-selected="false" data-i18n="tabs.ranking">連盟ランキング</button>
+      <button class="tab-btn" role="tab" data-tab="map" aria-selected="false" data-i18n="tabs.map">戦場マップ</button>
+      <button class="tab-btn" role="tab" data-tab="members" aria-selected="false" data-i18n="tabs.members">メンバー参加度（リーダー向け）</button>
+    </nav>
+
+    <div class="tab-panel active" id="tab-overview" role="tabpanel"></div>
+    <div class="tab-panel" id="tab-ranking" role="tabpanel"></div>
+    <div class="tab-panel" id="tab-map" role="tabpanel"></div>
+    <div class="tab-panel" id="tab-members" role="tabpanel"></div>
+
+  </section>
+
+</main>
+
+<div id="tooltip" role="status" aria-live="polite"></div>
+
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
