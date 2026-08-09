@@ -9,5 +9,10 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS"
+  },
+  "secrets": {
+    "required": [
+      "GITHUB_TOKEN"
+    ]
   }
 }
