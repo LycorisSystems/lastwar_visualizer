@@ -15,7 +15,7 @@ This file is written in Japanese / English / Chinese. Scroll to your language's 
 
 ### 使い方
 
-1. **`index.html` をダブルクリックしてブラウザで開く**（Chrome / Edge / Safari など）。インストールや専用サーバーは不要です。
+1. **`public/index.html` をダブルクリックしてブラウザで開く**（Chrome / Edge / Safari など）。インストールや専用サーバーは不要です。
 2. 表示された画面に、SVSログの `.xlsx` ファイルをドラッグ＆ドロップ（またはクリックして選択）します。`files` フォルダに置かれているファイルがあれば、その下に一覧が自動で表示され、クリックするだけで開けます（後述）。
 3. 4つのタブでデータを確認できます。
    - **概況**: 全体のKPIと、Capitol（首都拠点）を巡る攻防の時間帯別アクティビティ
@@ -61,7 +61,7 @@ This file is written in Japanese / English / Chinese. Scroll to your language's 
 
 複数のSVSログをこのリポジトリに置いておき、アップロード画面から選んで開けるようにする機能です。**GitHubリポジトリをprivate（非公開）にしたまま、Cloudflare Pagesで公開しているサイト自体はURLを知っていれば誰でも見られる**、という構成を想定しています。ソースコードや `files` フォルダの中身をGitHub経由で誰にでも見られる状態にはしたくないが、サイトへのログイン機能までは要らない、という場合の設定です。
 
-裏側では、Cloudflareの「Pages Functions」というサーバー側の小さな中継プログラム（`functions/api/files/`）が、GitHubのアクセストークンを使って**サーバー側だけで**privateリポジトリの中身を読みに行き、その結果をブラウザに渡しています。アクセストークンはブラウザ側のコードには一切出てこないので、サイトを見た人がトークンを盗み見ることはできません。
+裏側では、`src/worker.js` というサーバー側のコード（Cloudflare Worker）が、GitHubのアクセストークンを使って**サーバー側だけで**privateリポジトリの中身を読みに行き、その結果をブラウザに渡しています。アクセストークンはブラウザ側のコードには一切出てこないので、サイトを見た人がトークンを盗み見ることはできません。このリポジトリは `wrangler.jsonc` により「静的サイト（`public/` フォルダ）＋この1本のWorkerスクリプト」という構成でCloudflareにデプロイされます。
 
 **初回だけ必要な設定（あなたご自身の作業）**
 
@@ -79,7 +79,7 @@ This file is written in Japanese / English / Chinese. Scroll to your language's 
    - リポジトリの **Settings** → 一番下の **Danger Zone** → **Change repository visibility** → **Private**
    - Cloudflare PagesはGitHub連携（GitHub Appのアクセス権）経由でprivateリポジトリからもビルド・デプロイできるため、これだけではデプロイは止まりません
 
-設定後、`files` フォルダに `.xlsx` を置いて push すれば、次のデプロイ後にアップロード画面へ自動的に一覧表示されます（ボタンを押したりフォルダを選んだりする操作は不要です）。もしリポジトリ名を変更・フォークした場合は、`functions/api/files/index.js` と `functions/api/files/[name].js` の中の `OWNER` / `REPO` の値も書き換えてください。
+設定後、`files` フォルダに `.xlsx` を置いて push すれば、次のデプロイ後にアップロード画面へ自動的に一覧表示されます（ボタンを押したりフォルダを選んだりする操作は不要です）。もしリポジトリ名を変更・フォークした場合は、`src/worker.js` 冒頭の `OWNER` / `REPO` の値も書き換えてください。
 
 **うまく表示されないときは**：ブラウザの開発者ツールのコンソールに `Could not load the repo's files/ listing` という警告が出ていないか確認してください。多くの場合、`GITHUB_TOKEN` が未設定・入力ミス、または再デプロイがまだ、という原因です。この機能が使えなくても、通常のドラッグ＆ドロップでのアップロードには影響しません。
 
@@ -87,7 +87,7 @@ This file is written in Japanese / English / Chinese. Scroll to your language's 
 
 - ログの収集ツール側の都合で、まれにプレイヤー名（例: 「6/3」のような数字と記号だけの名前）がExcel上で日付として自動変換されてしまうことがあります。その場合は `(日付化した名前:2026/6/3)` のように表示されます。元の名前はファイルから復元できないため、心当たりのあるメンバーがいれば教えてあげてください。
 - データは1日単位のSVSイベントを想定しています。タイムスタンプが日付をまたぐ場合、時刻のみで集計されることがあります。
-- `index.html` / `styles.css` / `app.js` / `vendor/xlsx.full.min.js` はセットで動作します。フォルダ構成を保ったまま配布してください（`vendor` フォルダの中身も必要です）。`files/` フォルダは「配置済みのExcelから選ぶ」機能を使う場合のみ必要です。
+- `public/index.html` / `public/styles.css` / `public/app.js` / `public/vendor/xlsx.full.min.js` はセットで動作します。フォルダ構成を保ったまま配布してください。`files/`・`src/worker.js`・`wrangler.jsonc` は「配置済みのExcelから選ぶ」機能（Cloudflareへのデプロイ）を使う場合のみ必要です。ローカルで `public/index.html` を開いて手動アップロードするだけなら `public/` フォルダの中身だけで動作します。
 
 ---
 ---
@@ -100,7 +100,7 @@ Upload an in-game SVS (State vs State) war log (Excel file) and this tool visual
 
 ### How to use
 
-1. **Double-click `index.html`** to open it in your browser (Chrome, Edge, Safari, etc.). No installation or server needed.
+1. **Double-click `public/index.html`** to open it in your browser (Chrome, Edge, Safari, etc.). No installation or server needed.
 2. Drag and drop your SVS log `.xlsx` file onto the page (or click to choose a file). If the repo's `files` folder has any `.xlsx` files, they're listed automatically below the drop zone — click one to load it (see below).
 3. Explore the data across 4 tabs:
    - **Overview**: headline KPIs and capitol contest activity over time
@@ -146,7 +146,7 @@ The formula is always spelled out in the relevant tab of the app itself.
 
 Keep several SVS logs in this repo and pick one to open from the upload screen. This setup keeps the **GitHub repo private** (source code and the contents of `files/` aren't browsable by the public on GitHub) while the **deployed Cloudflare Pages site stays open** to anyone with its URL — no login wall.
 
-Under the hood, a small Cloudflare Pages Function (`functions/api/files/`) reads the private repo server-side using a GitHub token, and hands the result to the browser. The token itself never reaches client-side JS, so it's never visible to anyone viewing the deployed site.
+Under the hood, `src/worker.js` (a Cloudflare Worker) reads the private repo server-side using a GitHub token, and hands the result to the browser. The token itself never reaches client-side JS, so it's never visible to anyone viewing the deployed site. `wrangler.jsonc` deploys this repo as "a static site (`public/`) plus this one Worker script."
 
 **One-time setup (you'll need to do this yourself)**
 
@@ -154,7 +154,7 @@ Under the hood, a small Cloudflare Pages Function (`functions/api/files/`) reads
 2. **Add it to Cloudflare Pages**: Cloudflare dashboard → **Workers & Pages** → this project → **Settings** → **Environment variables** → Add variable named `GITHUB_TOKEN`, paste the token as the value, and mark it **Secret**. Add it to the Production environment (and Preview too, if you use that). Redeploy if it doesn't pick it up automatically.
 3. **Make the GitHub repo private**: repo **Settings** → **Danger Zone** → **Change repository visibility** → **Private**. Cloudflare Pages can still build and deploy from a private repo via its GitHub App integration, so this won't break your deployment.
 
-Once that's set up, just drop `.xlsx` files into `files/` and push — they show up on the upload screen automatically after the next deploy. If you fork or rename the repo, also update `OWNER`/`REPO` in `functions/api/files/index.js` and `functions/api/files/[name].js`.
+Once that's set up, just drop `.xlsx` files into `files/` and push — they show up on the upload screen automatically after the next deploy. If you fork or rename the repo, also update `OWNER`/`REPO` near the top of `src/worker.js`.
 
 **If the list doesn't show up**: check the browser console for a `Could not load the repo's files/ listing` warning — usually it means `GITHUB_TOKEN` isn't set (or has a typo) or the site hasn't redeployed since you added it. Regular drag-and-drop upload keeps working either way.
 
@@ -162,7 +162,7 @@ Once that's set up, just drop `.xlsx` files into `files/` and push — they show
 
 - Due to a quirk in how the source log was collected, a player name that looks like a date fragment (e.g. "6/3") can get silently auto-converted into an actual date by Excel. When that happens, the name shows as `(date-mangled name: 2026/6/3)`. The original text can't be recovered from the file — if you recognize who this might be, let them know.
 - The tool assumes a single-day SVS event. If timestamps cross midnight, they may be aggregated by time-of-day only.
-- `index.html`, `styles.css`, `app.js`, and `vendor/xlsx.full.min.js` must stay together in the same folder structure — please distribute the whole folder, including the `vendor` subfolder. The `files/` folder is only needed if you're using the "choose from prepared Excel files" feature.
+- `public/index.html`, `public/styles.css`, `public/app.js`, and `public/vendor/xlsx.full.min.js` must stay together in the same folder structure. `files/`, `src/worker.js`, and `wrangler.jsonc` are only needed for the Cloudflare-deployed "choose from prepared Excel files" feature — opening `public/index.html` locally and uploading manually only needs the `public/` folder.
 
 ---
 ---
@@ -175,7 +175,7 @@ Once that's set up, just drop `.xlsx` files into `files/` and push — they show
 
 ### 使用方法
 
-1. **双击 `index.html`**，用浏览器打开（Chrome、Edge、Safari 等均可）。无需安装，也无需服务器。
+1. **双击 `public/index.html`**，用浏览器打开（Chrome、Edge、Safari 等均可）。无需安装，也无需服务器。
 2. 将SVS日志的 `.xlsx` 文件拖放到页面上（或点击选择文件）。如果已内置预设数据，拖放区下方会出现「打开……」按钮，一键加载（见下文）。
 3. 可通过4个标签页查看数据：
    - **概况**：整体关键指标，以及围绕Capitol（主城据点）的攻防活跃度随时间的变化
@@ -221,7 +221,7 @@ Once that's set up, just drop `.xlsx` files into `files/` and push — they show
 
 可以将多份SVS日志放在本仓库中，在上传界面直接选择打开。此方案可以让 **GitHub仓库保持private（非公开）**（源代码和 `files/` 中的内容不会被公开浏览），同时 **部署在Cloudflare Pages上的网站本身仍对拥有该URL的任何人开放**——无需登录。
 
-其原理是：一个小型的Cloudflare Pages Function（`functions/api/files/`）在服务器端使用GitHub令牌读取私有仓库的内容，再把结果返回给浏览器。该令牌本身不会出现在客户端JS中，因此浏览网站的任何人都无法看到它。
+其原理是：`src/worker.js`（一个Cloudflare Worker）在服务器端使用GitHub令牌读取私有仓库的内容，再把结果返回给浏览器。该令牌本身不会出现在客户端JS中，因此浏览网站的任何人都无法看到它。`wrangler.jsonc` 会将本仓库部署为"一个静态站点（`public/`）+ 这一个Worker脚本"的组合。
 
 **首次需要您自行完成的设置**
 
@@ -229,7 +229,7 @@ Once that's set up, just drop `.xlsx` files into `files/` and push — they show
 2. **将令牌添加到Cloudflare Pages**：Cloudflare控制台 → **Workers & Pages** → 选择该项目 → **Settings** → **Environment variables** → 添加变量，名称为 `GITHUB_TOKEN`，值为刚才复制的令牌，类型选择 **Secret**（加密）。添加到Production环境（如果也使用Preview环境，请一并添加）。如未自动生效，请重新部署一次。
 3. **将GitHub仓库设为private**：仓库 **Settings** → 最下方 **Danger Zone** → **Change repository visibility** → **Private**。Cloudflare Pages通过其GitHub App的授权仍可从私有仓库构建和部署，因此不会影响部署。
 
-设置完成后，只需将 `.xlsx` 放入 `files/` 并push，下次部署后就会自动出现在上传界面的列表中（无需点击按钮或选择文件夹）。如果fork或重命名了本仓库，请同时修改 `functions/api/files/index.js` 和 `functions/api/files/[name].js` 中的 `OWNER`/`REPO`。
+设置完成后，只需将 `.xlsx` 放入 `files/` 并push，下次部署后就会自动出现在上传界面的列表中（无需点击按钮或选择文件夹）。如果fork或重命名了本仓库，请同时修改 `src/worker.js` 开头的 `OWNER`/`REPO`。
 
 **如果列表没有显示**：请检查浏览器控制台是否有 `Could not load the repo's files/ listing` 的警告，通常是 `GITHUB_TOKEN` 未设置（或输入有误），或添加后尚未重新部署。即使该功能不可用，也不影响正常的拖放上传。
 
@@ -237,4 +237,4 @@ Once that's set up, just drop `.xlsx` files into `files/` and push — they show
 
 - 由于日志采集工具的原因，极少数情况下，形似日期的玩家名字（例如"6/3"）可能会被Excel自动识别并转换为真实日期。此时会显示为 `（被识别为日期的名字：2026/6/3）`。原始名字无法从文件中恢复，如果您认得这可能是哪位成员，请提醒对方。
 - 本工具假定数据为单日SVS活动。如时间戳跨越午夜，可能仅按时间（不含日期）进行汇总。
-- `index.html`、`styles.css`、`app.js`、`vendor/xlsx.full.min.js` 这四者需要保持在同一文件夹结构下才能正常工作，请连同 `vendor` 子文件夹一起分发整个文件夹。`files/` 文件夹仅在使用"从已放置的Excel中选择"功能时才需要。
+- `public/index.html`、`public/styles.css`、`public/app.js`、`public/vendor/xlsx.full.min.js` 这四者需要保持在同一文件夹结构下才能正常工作。`files/`、`src/worker.js`、`wrangler.jsonc` 仅在使用部署到Cloudflare的"从已放置的Excel中选择"功能时才需要——仅在本地打开 `public/index.html` 手动上传的话，只需要 `public/` 文件夹即可。

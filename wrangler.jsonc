@@ -1,0 +1,13 @@
+{
+  // Cloudflare's "Worker with static assets" full-stack config: `main` is the Worker
+  // script that handles every request; `assets` points at the plain static site. The
+  // Worker (src/worker.js) only intercepts /api/files* itself and hands everything else
+  // straight to the ASSETS binding — see that file for details.
+  "name": "lastwar-visualizer",
+  "compatibility_date": "2025-01-01",
+  "main": "./src/worker.js",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  }
+}
