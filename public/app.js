@@ -48,7 +48,6 @@ const I18N = {
     "upload.readError": "ファイルの読み込みに失敗しました。",
     "upload.parseError": "Excelの解析に失敗しました: {msg}",
     "upload.presetDividerText": "または",
-    "upload.pickFolderHint": "リポジトリの \"files\" フォルダに置かれているExcelファイルです。",
     "filters.side": "陣営",
     "filters.sideAll": "すべて",
     "filters.sideAria": "陣営フィルター",
@@ -85,6 +84,7 @@ const I18N = {
     "ranking.formulaPrefix": "総合スコア = ",
     "ranking.formulaSuffix": "（3項目それぞれを「このファイル内の上位3連盟の平均を100点」として換算し、その3つのスコアを合計します（合計はおおむね300点前後が上限）。1位を単純な基準にすると突出した連盟1つで他全員の点数が圧縮されてしまうため、上位3連盟の平均を基準にしています。1位が2位・3位を大きく引き離している場合は100点を超えることもあります。参加人数が多い連盟ほど各項目の合計が自然に大きくなり、点数も上がりやすくなります。参加人数そのものはスコアの項目には含めていません）。",
     "ranking.formulaNote2": "拠点アクションは capitol と canon×4 を種別を問わず均等に合算しています（capitolだけを特別扱いしていません）。瓦礫解体は座標データがないため距離は考慮していません（単純な解体数です）。テレポート回数は参加のアクティブさを示す指標であり、戦闘への貢献とは別軸のためスコアには含めていません。",
+    "ranking.chartMetric": "グラフに表示するデータ",
     "ranking.noAlliances": "表示できる連盟がありません。",
     "ranking.detailTitle": "連盟別 詳細データ",
     "ranking.detailSub": "列見出しをクリックすると並び替えできます。「拠点アクション」は capitol・canon×4 の合計（内訳は上のグラフのツールチップ参照）。",
@@ -133,6 +133,8 @@ const I18N = {
     "col.attacksTakenLost": "うち突破された",
     "col.totalActivity": "総合活動スコア",
     "col.refTeleportIns": "（参考）テレポート回数",
+    "col.refRalliesOpened": "（参考）集結開始回数",
+    "col.refRalliesJoined": "（参考）集結参加回数",
     "struct.capitol": "capitol",
     "struct.canon_NE": "canon_NE",
     "struct.canon_NW": "canon_NW",
@@ -143,7 +145,7 @@ const I18N = {
     "col.avgAttackDistance": "平均対象距離",
     "col.avgAttackScorePerHit": "1回あたり平均獲得ポイント",
     "attackScore.note": "攻撃スコアの計算式：① 距離 = 攻撃対象の座標とcapitolの座標との直線距離。② 重み = max(0, 1 − 距離 ÷ このファイルで記録された攻撃対象の中の最大距離)。③ 攻撃スコア = 基地攻撃1件ごとの重み（②）を合計したもの（勝敗を問わず、着弾した攻撃はすべて対象）。capitolのすぐそばを攻撃するほど1件あたり最大1.0点に近づき、記録上もっとも遠い場所を攻撃すると1件あたり0点に近づきます。総合活動スコア・基地攻撃数と見比べることで、戦域の外側の無防備な基地ばかり狙って数字を稼いでいないかを確認できます。",
-    "attackScore.unavailable": "このファイルには攻撃対象の座標データが含まれていないため、攻撃スコアは計算できません（base_hitsシートにtarget_x/target_y列がある形式のログが必要です）。",
+    "attackScore.noDistance": "このファイルには攻撃対象の座標データが含まれていないため、距離による重み付けはできません。代わりに、着弾した基地攻撃の回数（勝敗は問いません）をそのまま攻撃スコアとして使用しています。",
   },
   en: {
     "app.title": "SVS War Report Visualizer",
@@ -163,7 +165,6 @@ const I18N = {
     "upload.readError": "Failed to read the file.",
     "upload.parseError": "Failed to parse the Excel file: {msg}",
     "upload.presetDividerText": "or",
-    "upload.pickFolderHint": "Excel files currently in the repo's \"files\" folder.",
     "filters.side": "Side",
     "filters.sideAll": "All",
     "filters.sideAria": "Side filter",
@@ -200,6 +201,7 @@ const I18N = {
     "ranking.formulaPrefix": "Total score = ",
     "ranking.formulaSuffix": " (each of the 3 is scaled so that 100 = the average of the top 3 alliances in this file on that one axis, then the three scores are added — roughly capped around 300. Using the top-3 average instead of a plain #1 keeps one outlier alliance from compressing everyone else toward 0; if #1 is well clear of #2/#3 it can score above 100. An alliance with more active members naturally scores higher on each axis, since every extra contributing member adds to the total. Participant count itself isn't a scored component).",
     "ranking.formulaNote2": "Structure actions combine capitol and all 4 canons equally, regardless of type (capitol gets no special bonus). Rubble clears aren't distance-weighted since the log has no coordinates for them (it's a plain clear count). Teleport-in count reflects presence/activity, not combat contribution, so it is excluded from the score.",
+    "ranking.chartMetric": "Chart metric",
     "ranking.noAlliances": "No alliances to display.",
     "ranking.detailTitle": "Alliance detail table",
     "ranking.detailSub": "Click a column header to sort. \"Structure actions\" is the total across capitol and all 4 canons (see the chart tooltip above for the breakdown).",
@@ -248,6 +250,8 @@ const I18N = {
     "col.attacksTakenLost": "of which breached",
     "col.totalActivity": "Total activity score",
     "col.refTeleportIns": "(reference) Teleport-ins",
+    "col.refRalliesOpened": "(reference) Rallies opened",
+    "col.refRalliesJoined": "(reference) Rallies joined",
     "struct.capitol": "capitol",
     "struct.canon_NE": "canon (NE)",
     "struct.canon_NW": "canon (NW)",
@@ -258,7 +262,7 @@ const I18N = {
     "col.avgAttackDistance": "Avg. target distance",
     "col.avgAttackScorePerHit": "Avg. points per attack",
     "attackScore.note": "How the attack score is calculated: ① distance = the straight-line distance between the attack target's coordinates and the capitol's coordinates. ② weight = max(0, 1 − distance ÷ the farthest recorded attack-target distance in this file). ③ attack score = the sum of the weight (②) for every landed base attack, win or lose. A hit right next to capitol is worth close to 1.0 point; a hit at the farthest recorded distance is worth close to 0. Compare it against total activity score / base attack count to spot players racking up numbers by hitting undefended bases far from the front line.",
-    "attackScore.unavailable": "This file has no target coordinate data, so the attack score can't be calculated (requires a log with target_x/target_y columns on the base_hits sheet).",
+    "attackScore.noDistance": "This file has no target coordinate data, so distance weighting isn't possible. The attack score instead falls back to a plain count of landed base attacks (win or lose).",
   },
   zh: {
     "app.title": "SVS 战争报告可视化工具",
@@ -278,7 +282,6 @@ const I18N = {
     "upload.readError": "文件读取失败。",
     "upload.parseError": "Excel解析失败：{msg}",
     "upload.presetDividerText": "或",
-    "upload.pickFolderHint": "仓库 \"files\" 文件夹中当前的Excel文件。",
     "filters.side": "阵营",
     "filters.sideAll": "全部",
     "filters.sideAria": "阵营筛选",
@@ -315,6 +318,7 @@ const I18N = {
     "ranking.formulaPrefix": "综合评分 = ",
     "ranking.formulaSuffix": "（将3个项目分别以「本文件中前3名联盟的平均值」定为100分进行换算，再把这3项分数相加（合计上限大致在300分左右）。以前3名平均值为基准，而不是单纯的第1名，是为了避免某一个突出的联盟把其他所有联盟的分数都压低。如果第1名明显领先第2、3名，该项分数也可能超过100分。参与人数越多的联盟，各项合计自然越高，分数也更容易上升。参与人数本身不作为评分项目）。",
     "ranking.formulaNote2": "据点行动将capitol与canon×4不分种类均等合计（不特别优待capitol）。瓦砾清除没有坐标数据，因此不考虑距离（只是单纯的清除数量）。传送次数体现的是活跃度而非战斗贡献，因此不计入评分。",
+    "ranking.chartMetric": "图表显示的数据",
     "ranking.noAlliances": "没有可显示的联盟。",
     "ranking.detailTitle": "各联盟详细数据",
     "ranking.detailSub": "点击列标题可排序。「据点行动」为capitol・canon×4的合计（明细请查看上方图表的提示框）。",
@@ -363,6 +367,8 @@ const I18N = {
     "col.attacksTakenLost": "其中被攻破",
     "col.totalActivity": "综合活动评分",
     "col.refTeleportIns": "（参考）传送次数",
+    "col.refRalliesOpened": "（参考）集结开始次数",
+    "col.refRalliesJoined": "（参考）集结加入次数",
     "struct.capitol": "capitol",
     "struct.canon_NE": "canon（东北）",
     "struct.canon_NW": "canon（西北）",
@@ -373,7 +379,7 @@ const I18N = {
     "col.avgAttackDistance": "目标平均距离",
     "col.avgAttackScorePerHit": "每次攻击平均得分",
     "attackScore.note": "攻击评分的计算方法：①距离 = 攻击目标坐标与capitol坐标之间的直线距离。②权重 = max(0, 1 − 距离 ÷ 本文件中记录的攻击目标最大距离)。③攻击评分 = 每次命中的基地攻击的权重（②）之和（不论输赢，全部计入）。越靠近capitol攻击，单次最高可接近1.0分；攻击本文件记录中最远的位置，则接近0分。可与综合活动评分・基地攻击数对比，识别是否有人只靠攻击远离前线的无防守基地来刷数据。",
-    "attackScore.unavailable": "此文件不包含目标坐标数据，因此无法计算攻击评分（需要base_hits表中包含target_x/target_y列的日志）。",
+    "attackScore.noDistance": "此文件不包含目标坐标数据，因此无法进行距离加权。攻击评分改为直接使用命中的基地攻击次数（不论输赢）。",
   },
 };
 
@@ -624,7 +630,9 @@ function normHeader(h) { return (h == null ? "" : String(h)).trim().toLowerCase(
 function rowsToObjects(rows, requiredHeaderSubstr) {
   if (!rows.length) return [];
   let headerIdx = 0;
-  for (let i = 0; i < Math.min(rows.length, 5); i++) {
+  // 12 rows, not 5: the "Final Players" sheet leads with a title + a couple of prose
+  // description rows plus a one-row summary table before its real per-player header.
+  for (let i = 0; i < Math.min(rows.length, 12); i++) {
     const joined = (rows[i] || []).map(normHeader).join("|");
     if (requiredHeaderSubstr.every(s => joined.includes(s))) { headerIdx = i; break; }
   }
@@ -685,62 +693,177 @@ function normalizeWorkbook(wb) {
   const rubbleSheet = findSheetName(wb, ["rubbles", "rubble"]);
   const teleSheet = findSheetName(wb, ["teleports", "teleport"]);
   const marchSheet = findSheetName(wb, ["marches", "march"]);
+  const finalPlayersSheet = findSheetName(wb, ["final players"]);
+  const ralliesSheet = findSheetName(wb, ["rallies"]);
+  const rallies1Sheet = findSheetName(wb, ["rallies1"]);
 
-  const movements = rowsToObjects(sheetToRows(wb, movSheet), ["event", "player"]).map(r => ({
-    time: toDateOrNull(r.time_local),
-    minute: timeOfDayMinutes(r.time_local),
-    event: normStr(r.event),
-    player: normName(r.player_name),
-    alliance: normStr(r.alliance),
-    side: sideStr(r.side),
-    x: Number(r.x ?? r["x"]), y: Number(r.y ?? r["y"]),
-  }));
+  // --- Name canonicalization -------------------------------------------------------
+  // Some SVS events end in a mass rename: everyone switches to an unreadable string of
+  // lookalike characters for the final push on capitol, so a player's early-game rows
+  // and late-game rows would otherwise land under two different name strings and get
+  // counted as two different people. Wherever this log's own export tooling already
+  // recorded an old<->new name pair — on the "Final Players" summary sheet, next to a
+  // rally joiner on the rallies sheet, or on the rallies1 per-player summary sheet —
+  // fold the new/garbled name back to the old, readable one before anything gets grouped
+  // by name. Only pairs where both names are known and differ are recorded; a name with
+  // no known old form is left as-is (it's genuinely unrecoverable from this file, not a
+  // bug).
+  const nameCanon = new Map();
+  function learnName(oldName, newName) {
+    const o = normStr(oldName), n = normStr(newName);
+    if (o && n && o !== n) nameCanon.set(n, o);
+  }
+  const finalPlayersRows = rowsToObjects(sheetToRows(wb, finalPlayersSheet), ["old name", "new name"]);
+  finalPlayersRows.forEach(r => learnName(r["old name"], r["new name"]));
+  const ralliesRows = rowsToObjects(sheetToRows(wb, ralliesSheet), ["starter_name"]);
+  ralliesRows.forEach(r => {
+    for (let i = 1; i <= 5; i++) learnName(r[`join_${i}_old_name`], r[`join_${i}`]);
+  });
+  const rallies1Rows = rowsToObjects(sheetToRows(wb, rallies1Sheet), ["player_old_name"]);
+  rallies1Rows.forEach(r => learnName(r.player_old_name, r.player));
 
-  const structures = rowsToObjects(sheetToRows(wb, structSheet), ["player", "structure"]).map(r => ({
-    dispatchMinute: timeOfDayMinutes(r.dispatch_time),
-    player: normName(r.player_name),
-    alliance: normStr(r.alliance),
-    side: sideStr(r.side),
-    structure: normStr(r.structure),
-    action: normStr(r.action),
-    targetX: Number(r.target_x), targetY: Number(r.target_y),
-    arriveMinute: timeOfDayMinutes(r.arrive_time),
-    endMinute: timeOfDayMinutes(r.end_time),
-    outcome: normStr(r.outcome),
-    isBattleFail: r.isbattlefail === true || r.isbattlefail === "TRUE",
-  }));
+  // A player's numeric ID, used as their display name, can get *doubly* mangled: Excel
+  // stores the raw number, then a later export step (seen on the rubbles sheet) renders
+  // it in scientific notation as plain text (e.g. "1.42E+15"), keeping only ~3 significant
+  // digits. "Final Players" and rallies1 sometimes have the same identity at full
+  // precision (as an actual number, paired with a real old name and an alliance) — round
+  // it the same way Excel would and, where exactly one known player rounds to a given
+  // string, learn that string as another alias for them. Where two different players
+  // round to the same string, try their alliance as a tiebreaker instead (the rubbles row
+  // carries its own alliance too): if only one of the colliding candidates shares that
+  // alliance, it's still a safe match. Only when even that's ambiguous (two colliding
+  // candidates in the same alliance) is it left alone, rather than risking crediting the
+  // wrong person.
+  function excelSci2(n) {
+    return typeof n === "number" && isFinite(n) && Math.abs(n) >= 1e10 ? n.toExponential(2).toUpperCase() : null;
+  }
+  const sciByAlliance = new Map(); // rounded string -> Map(alliance -> Set of candidate old names)
+  function noteSciCandidates(old, alliance, values) {
+    if (!old) return;
+    values.forEach(val => {
+      const sci = excelSci2(val);
+      if (!sci) return;
+      if (!sciByAlliance.has(sci)) sciByAlliance.set(sci, new Map());
+      const byAlliance = sciByAlliance.get(sci);
+      if (!byAlliance.has(alliance)) byAlliance.set(alliance, new Set());
+      byAlliance.get(alliance).add(old);
+    });
+  }
+  finalPlayersRows.forEach(r => {
+    noteSciCandidates(normStr(r["old name"]), normStr(r["alliance"]), [r["old name"], r["new name"]]);
+  });
+  rallies1Rows.forEach(r => {
+    noteSciCandidates(normStr(r.player_old_name), normStr(r.alliance), [r.player_old_name, r.player]);
+  });
+  const sciAllianceCanon = new Map(); // "alliance||rounded string" -> old name
+  sciByAlliance.forEach((byAlliance, sci) => {
+    const allOld = new Set();
+    byAlliance.forEach(names => names.forEach(n => allOld.add(n)));
+    if (allOld.size === 1) { learnName(Array.from(allOld)[0], sci); return; }
+    byAlliance.forEach((names, alliance) => {
+      if (names.size === 1 && alliance) sciAllianceCanon.set(alliance + "||" + sci, Array.from(names)[0]);
+    });
+  });
+
+  function canon(name, alliance) {
+    if (name == null) return name;
+    if (nameCanon.has(name)) return nameCanon.get(name);
+    if (alliance) {
+      const resolved = sciAllianceCanon.get(alliance + "||" + name);
+      if (resolved) return resolved;
+    }
+    return name;
+  }
+
+  const movements = rowsToObjects(sheetToRows(wb, movSheet), ["event", "player"]).map(r => {
+    const alliance = normStr(r.alliance);
+    return {
+      time: toDateOrNull(r.time_local),
+      minute: timeOfDayMinutes(r.time_local),
+      event: normStr(r.event),
+      player: canon(normName(r.player_name), alliance),
+      alliance,
+      side: sideStr(r.side),
+      x: Number(r.x ?? r["x"]), y: Number(r.y ?? r["y"]),
+    };
+  });
+
+  const structures = rowsToObjects(sheetToRows(wb, structSheet), ["player", "structure"]).map(r => {
+    const alliance = normStr(r.alliance);
+    return {
+      dispatchMinute: timeOfDayMinutes(r.dispatch_time),
+      player: canon(normName(r.player_name), alliance),
+      alliance,
+      side: sideStr(r.side),
+      structure: normStr(r.structure),
+      action: normStr(r.action),
+      targetX: Number(r.target_x), targetY: Number(r.target_y),
+      arriveMinute: timeOfDayMinutes(r.arrive_time),
+      endMinute: timeOfDayMinutes(r.end_time),
+      outcome: normStr(r.outcome),
+      isBattleFail: r.isbattlefail === true || r.isbattlefail === "TRUE",
+    };
+  });
 
   // target_x/target_y (the victim base's coordinates) and attacker_x/attacker_y are a
   // newer addition to this sheet — older exports won't have them, so these come through
   // as null and every distance-based feature below degrades to "unknown" rather than
   // erroring.
-  const baseHits = rowsToObjects(sheetToRows(wb, hitsSheet), ["victim", "attacker"]).map(r => ({
-    minute: timeOfDayMinutes(r.time_local),
-    victim: normName(r.victim_name),
-    victimAlliance: normStr(r.victim_alliance),
-    victimSide: sideStr(r.victim_side),
-    targetX: r.target_x != null ? Number(r.target_x) : null,
-    targetY: r.target_y != null ? Number(r.target_y) : null,
-    attacker: normName(r.attacker_name),
-    attackerAlliance: normStr(r.attacker_alliance),
-    attackerSide: sideStr(r.attacker_side),
-    attackerX: r.attacker_x != null ? Number(r.attacker_x) : null,
-    attackerY: r.attacker_y != null ? Number(r.attacker_y) : null,
-    attackerWon: r.attacker_won === true || r.attacker_won === "TRUE",
-  }));
+  const baseHits = rowsToObjects(sheetToRows(wb, hitsSheet), ["victim", "attacker"]).map(r => {
+    const victimAlliance = normStr(r.victim_alliance);
+    const attackerAlliance = normStr(r.attacker_alliance);
+    return {
+      minute: timeOfDayMinutes(r.time_local),
+      victim: canon(normName(r.victim_name), victimAlliance),
+      victimAlliance,
+      victimSide: sideStr(r.victim_side),
+      targetX: r.target_x != null ? Number(r.target_x) : null,
+      targetY: r.target_y != null ? Number(r.target_y) : null,
+      attacker: canon(normName(r.attacker_name), attackerAlliance),
+      attackerAlliance,
+      attackerSide: sideStr(r.attacker_side),
+      attackerX: r.attacker_x != null ? Number(r.attacker_x) : null,
+      attackerY: r.attacker_y != null ? Number(r.attacker_y) : null,
+      attackerWon: r.attacker_won === true || r.attacker_won === "TRUE",
+    };
+  });
 
   // The rubbles sheet's columns have been renamed across exports of this log (older
   // files used name/clearing_marches/completed_clears; newer ones use
   // player/marches_sent/completions plus extra detail columns) — read either name so
   // both old and new files work. Only "alliance" is required to find the header row,
   // since the name column itself is the part that renamed.
-  const rubbles = rowsToObjects(sheetToRows(wb, rubbleSheet), ["alliance"]).map(r => ({
-    player: normName(r.name ?? r.player),
-    alliance: normStr(r.alliance),
-    side: sideStr(r.side),
-    clearingMarches: Number(r.clearing_marches ?? r.marches_sent) || 0,
-    completedClears: Number(r.completed_clears ?? r.completions) || 0,
-  }));
+  const rubbles = rowsToObjects(sheetToRows(wb, rubbleSheet), ["alliance"]).map(r => {
+    const alliance = normStr(r.alliance);
+    return {
+      player: canon(normName(r.name ?? r.player), alliance),
+      alliance,
+      side: sideStr(r.side),
+      clearingMarches: Number(r.clearing_marches ?? r.marches_sent) || 0,
+      completedClears: Number(r.completed_clears ?? r.completions) || 0,
+    };
+  });
+
+  // rallies: reference-only stats (see buildModel) — a rally's starter carries an
+  // alliance, but joiners don't get their own alliance column in this sheet, so joiners
+  // are attributed to the starter's alliance (rallies are alliance-internal groups).
+  // Only the first 5 named joiners are ever recorded by this log format; participantCount
+  // on the raw sheet still reflects the true total.
+  const rallies = ralliesRows.map(r => {
+    const starterAlliance = normStr(r.starter_alliance);
+    const joiners = [];
+    for (let i = 1; i <= 5; i++) {
+      const name = canon(normName(r[`join_${i}`]), starterAlliance);
+      if (name) joiners.push(name);
+    }
+    return {
+      minute: timeOfDayMinutes(r.start_time),
+      starter: canon(normName(r.starter_name), starterAlliance),
+      starterAlliance,
+      side: sideStr(r.side),
+      joiners,
+    };
+  });
 
   const teleportRows = rowsToObjects(sheetToRows(wb, teleSheet), ["alliance", "player"]);
   const teleports = teleportRows.map(r => ({
@@ -769,7 +892,7 @@ function normalizeWorkbook(wb) {
     }
   }
 
-  return { movements, structures, baseHits, rubbles, teleports, marches };
+  return { movements, structures, baseHits, rubbles, teleports, marches, rallies };
 }
 
 /* ================= METRICS MODEL ================= */
@@ -853,6 +976,7 @@ function buildModel(raw, fileName) {
       forcedRelocations: 0, teleportIns: 0,
       structureBreakdown: {},
       attackScore: 0, attackDistSum: 0, attackScoreHits: 0,
+      ralliesOpened: 0, ralliesJoined: 0,
     };
   }
   const allianceMap = new Map();
@@ -870,6 +994,7 @@ function buildModel(raw, fileName) {
       attacksLanded: 0, attacksWon: 0, attacksTaken: 0, attacksTakenLost: 0,
       rubbleClears: 0, rubbleMarches: 0,
       attackScore: 0, attackDistSum: 0, attackScoreHits: 0,
+      ralliesOpened: 0, ralliesJoined: 0,
     };
   }
   const playerMap = new Map();
@@ -898,6 +1023,12 @@ function buildModel(raw, fileName) {
     const d = distFromCapitol(b.targetX, b.targetY);
     if (d != null && d > maxTargetDist) maxTargetDist = d;
   });
+  // Some exports of base_hits carry no target coordinates at all (an older/reduced log
+  // format, unrelated to whether names got renamed) — in that case every distance below
+  // comes back null, and the attack score falls back to a flat +1 per landed attack
+  // instead of silently scoring 0 for everyone. See hasAttackDistanceData in the returned
+  // meta, and where it's added per-hit below.
+  const hasCoordinateData = capitolX != null && raw.baseHits.some(b => b.targetX != null && b.targetY != null);
   /** 1.0 right at the capitol, fading linearly to 0 at the farthest recorded PvP target
    *  in this file — so a hit next to capitol counts fully and one on the far edge of the
    *  map counts for ~nothing. Applied to every landed base_hits attack, win or lose:
@@ -934,8 +1065,10 @@ function buildModel(raw, fileName) {
     const aAcc = getAlliance(s.alliance);
     if (aAcc && s.player) aAcc.participants.add(s.player);
     const pAcc = getPlayer(s.alliance, s.player);
-    const isDefense = s.action === "garrison_hold" || s.action === "reinforce_in";
-    const isAttack = s.action === "rally_in";
+    // Action strings have varied across exports of this log ("garrison_hold"/"garrison",
+    // "reinforce_in"/"reinforce", "rally_in"/"rally") — recognize both forms.
+    const isDefense = s.action === "garrison_hold" || s.action === "garrison" || s.action === "reinforce_in" || s.action === "reinforce";
+    const isAttack = s.action === "rally_in" || s.action === "rally";
     if (isDefense) { if (aAcc) aAcc.defenseActions++; if (pAcc) pAcc.defenseActions++; }
     if (isAttack) { if (aAcc) aAcc.attackActions++; if (pAcc) pAcc.attackActions++; }
     if (s.action === "withdraw" && aAcc) aAcc.withdraws++;
@@ -979,6 +1112,12 @@ function buildModel(raw, fileName) {
     if (prox) {
       if (attAcc) { attAcc.attackScore += prox.weight; attAcc.attackDistSum += prox.dist; attAcc.attackScoreHits += 1; }
       if (attP) { attP.attackScore += prox.weight; attP.attackDistSum += prox.dist; attP.attackScoreHits += 1; }
+    } else if (!hasCoordinateData) {
+      // This file has no target coordinates anywhere, so distance weighting isn't
+      // possible at all — fall back to a flat +1 per landed attack rather than leaving
+      // the whole attack-score axis at 0 for everyone.
+      if (attAcc) attAcc.attackScore += 1;
+      if (attP) attP.attackScore += 1;
     }
 
     const vicAcc = getAlliance(b.victimAlliance);
@@ -995,6 +1134,29 @@ function buildModel(raw, fileName) {
     if (aAcc) { aAcc.rubbleClears += r.completedClears; aAcc.rubbleMarches += r.clearingMarches; }
     const pAcc = getPlayer(r.alliance, r.player);
     if (pAcc) { pAcc.rubbleClears += r.completedClears; pAcc.rubbleMarches += r.clearingMarches; }
+  });
+
+  // Rallies opened/joined are reference-only counts, shown alongside teleport-ins on the
+  // member table — like teleport-ins, they reflect presence/coordination rather than a
+  // measurable contribution (a rally's actual damage is already captured via
+  // structureActions/attackScore), so they deliberately don't feed into either score.
+  // Deliberately a *lookup*, not getAlliance()/getPlayer(): a rally join alone shouldn't
+  // conjure a new roster entry for someone who otherwise left no trace in this file — it
+  // only adds the count onto an alliance/player who already exists from movements/
+  // structures/base_hits/rubbles, so files with no rallies sheet (or an untouched one)
+  // show exactly the same participant/player counts as before.
+  raw.rallies.forEach(r => {
+    const startAcc = allianceMap.get(r.starterAlliance) || null;
+    const startP = startAcc && r.starter ? playerMap.get(r.starterAlliance + "||" + r.starter) || null : null;
+    if (startAcc) startAcc.ralliesOpened++;
+    if (startP) startP.ralliesOpened++;
+
+    r.joiners.forEach(joiner => {
+      const joinAcc = allianceMap.get(r.starterAlliance) || null;
+      const joinP = joinAcc && joiner ? playerMap.get(r.starterAlliance + "||" + joiner) || null : null;
+      if (joinAcc) joinAcc.ralliesJoined++;
+      if (joinP) joinP.ralliesJoined++;
+    });
   });
 
   raw.teleports.forEach(t => {
@@ -1089,7 +1251,7 @@ function buildModel(raw, fileName) {
       totalParticipants: new Set(players.map(p => p.player)).size,
       totalBaseHits: raw.baseHits.length,
       totalAttackerWins: raw.baseHits.filter(b => b.attackerWon).length,
-      hasAttackScoreData: capitolX != null && raw.baseHits.some(b => b.targetX != null && b.targetY != null),
+      hasAttackDistanceData: hasCoordinateData,
     },
     allianceSide, sideColors, alliances, players, scatterPoints, structureNodes: structureNodesArr, capitolTimeline,
   };
@@ -1336,8 +1498,21 @@ function renderScatterMap(container, { points, structureNodes, colorFn, tooltipF
   container.appendChild(svg);
 }
 
+/** Shared by renderSortableTable's own row order and by any chart that wants to mirror
+ *  a table's current sort (e.g. the Ranking tab's bar chart) — one comparator so the two
+ *  can never disagree on tie-breaking or locale-aware string ordering. */
+function sortRowsBy(rows, key, dir) {
+  return rows.slice().sort((a, b) => {
+    const av = a[key], bv = b[key];
+    let cmp;
+    if (typeof av === "string" || typeof bv === "string") cmp = String(av ?? "").localeCompare(String(bv ?? ""), NUMBER_LOCALES[currentLang] || "ja");
+    else cmp = (av ?? -Infinity) - (bv ?? -Infinity);
+    return dir === "asc" ? cmp : -cmp;
+  });
+}
+
 /* ================= SORTABLE TABLE ================= */
-function renderSortableTable(container, { columns, rows, rowClassFn, initialSort }) {
+function renderSortableTable(container, { columns, rows, rowClassFn, initialSort, onSort }) {
   container.innerHTML = "";
   let sortKey = initialSort ? initialSort.key : columns[0].key;
   let sortDir = initialSort ? initialSort.dir : "desc";
@@ -1371,8 +1546,12 @@ function renderSortableTable(container, { columns, rows, rowClassFn, initialSort
       const th = el("th", { class: cls }, [document.createTextNode(col.label)]);
       if (col.key === sortKey) { th.classList.add("sorted"); th.setAttribute("data-arrow", sortDir === "asc" ? "▲" : "▼"); }
       th.addEventListener("click", () => {
-        if (sortKey === col.key) sortDir = sortDir === "asc" ? "desc" : "asc";
-        else { sortKey = col.key; sortDir = col.text ? "asc" : "desc"; }
+        const nextDir = sortKey === col.key ? (sortDir === "asc" ? "desc" : "asc") : (col.text ? "asc" : "desc");
+        const nextKey = col.key;
+        // When the caller wants to know about (and drive other UI off of) the active sort
+        // column — e.g. the Ranking tab's chart — it owns the re-render instead of us.
+        if (onSort) { onSort(nextKey, nextDir); return; }
+        sortKey = nextKey; sortDir = nextDir;
         build();
       });
       headRow.appendChild(th);
@@ -1380,13 +1559,7 @@ function renderSortableTable(container, { columns, rows, rowClassFn, initialSort
     thead.appendChild(headRow);
     table.appendChild(thead);
 
-    const sorted = rows.slice().sort((a, b) => {
-      const av = a[sortKey], bv = b[sortKey];
-      let cmp;
-      if (typeof av === "string" || typeof bv === "string") cmp = String(av ?? "").localeCompare(String(bv ?? ""), NUMBER_LOCALES[currentLang] || "ja");
-      else cmp = (av ?? -Infinity) - (bv ?? -Infinity);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
+    const sorted = sortRowsBy(rows, sortKey, sortDir);
 
     const tbody = el("tbody");
     sorted.forEach(r => {
@@ -1420,7 +1593,7 @@ function downloadCsv(filename, columns, rows) {
 
 /* ================= DASHBOARD BOOT & FILTERS ================= */
 
-const uiState = { side: "all", focusAlliance: null, mapEmphasis: [], membersAlliance: null, membersSearch: "" };
+const uiState = { side: "all", focusAlliance: null, mapEmphasis: [], membersAlliance: null, membersSearch: "", rankingSort: { key: "score", dir: "desc" } };
 
 function updateHeaderSubtitle(model) {
   $("#header-subtitle").textContent = t("header.subtitleLoaded", {
@@ -1583,6 +1756,41 @@ function renderRankingTab(model, alliances) {
   const root = $("#tab-ranking");
   root.innerHTML = "";
 
+  // Single source of truth for the detail table's columns, reused for the chart's own
+  // metric picker below — so the two never drift out of sync, and adding/renaming a
+  // column only ever needs to happen in one place.
+  //
+  // Total score sits right after the identity columns (not buried at the far right),
+  // immediately followed by the 3 raw columns that are actually summed to make it — both
+  // highlighted (see .col-total-score / .col-score-part in styles.css) — so it's visually
+  // obvious which columns are "the formula" and which are just context.
+  const columns = [
+    { key: "alliance", label: t("col.alliance"), text: true },
+    { key: "side", label: t("col.side"), format: (v) => sideLabel(v) },
+    { key: "score", label: t("col.score"), format: (v) => v.toFixed(1), className: "col-total-score" },
+    { key: "structureActionsPoints", label: "+ " + t("col.structureActionsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
+    { key: "attackScorePoints", label: "+ " + t("col.attackScorePoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
+    { key: "rubbleClearsPoints", label: "+ " + t("col.rubbleClearsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
+    { key: "participantCount", label: t("col.participantCount") },
+    { key: "structureActions", label: t("col.structureActions") },
+    { key: "attacksLanded", label: t("col.attacksLanded") },
+    { key: "attackWinRate", label: t("col.attackWinRate"), format: (v) => fmtPct(v ?? 0) },
+    { key: "attackScore", label: t("col.attackScore"), format: (v) => (v || 0).toFixed(1) },
+    { key: "attacksTaken", label: t("col.attacksTaken") },
+    { key: "defenseHoldRate", label: t("col.defenseHoldRate"), format: (v) => fmtPct(v ?? 0) },
+    { key: "rubbleClears", label: t("col.rubbleClears") },
+  ];
+  // "side" is technically a non-text column (it has a format function, like the numeric
+  // ones) but its values are a server id, not a magnitude — plotting it as a bar height
+  // would be meaningless, so it's excluded here even though it's a legitimate thing to
+  // sort the table by.
+  const chartColumns = columns.filter(c => !c.text && c.key !== "side");
+
+  function setRankingSort(key, dir) {
+    uiState.rankingSort = { key, dir };
+    renderRankingTab(model, alliances);
+  }
+
   const presentSides = Array.from(new Set(alliances.map(a => a.side).filter(Boolean)));
   const card = el("div", { class: "card" });
   card.appendChild(el("div", { class: "card-head" }, [
@@ -1597,19 +1805,45 @@ function renderRankingTab(model, alliances) {
     el("br"),
     t("ranking.formulaNote2"),
     el("br"),
-    model.meta.hasAttackScoreData ? t("attackScore.note") : t("attackScore.unavailable"),
+    model.meta.hasAttackDistanceData ? t("attackScore.note") : t("attackScore.noDistance"),
   ]));
   if (presentSides.length > 1 || presentSides.length === 0) {
     const legendWrap = el("div", {});
     renderLegend(legendWrap, (model.meta.sides.length ? model.meta.sides : presentSides).map(s => ({ label: sideLabel(s), color: sideColorVar(s) })));
     card.appendChild(legendWrap);
   }
+
+  // The chart's metric always matches whichever data column is currently driving the
+  // table's sort below (the same column the table itself pulls to the front — see
+  // displayColumns() in renderSortableTable) — and can also be changed directly from this
+  // dropdown, which drives the table's sort the same way clicking that column header would.
+  // The table may currently be sorted by a column the chart can't plot (e.g. "side") —
+  // in that case the chart just keeps showing its last valid metric (falling back to
+  // score) rather than forcing the table's sort back to match it.
+  const activeChartCol = chartColumns.find(c => c.key === uiState.rankingSort.key)
+    || chartColumns.find(c => c.key === "score") || chartColumns[0];
+  const chartControls = el("div", { class: "toolbar", style: "margin-bottom:8px" });
+  const metricLabel = el("label", {}, [t("ranking.chartMetric") + " "]);
+  const metricSel = el("select", {});
+  chartColumns.forEach(c => {
+    const opt = el("option", { value: c.key }, [c.label.replace(/^\+\s*/, "")]);
+    if (c.key === activeChartCol.key) opt.selected = true;
+    metricSel.appendChild(opt);
+  });
+  metricSel.addEventListener("change", () => setRankingSort(metricSel.value, "desc"));
+  metricLabel.appendChild(metricSel);
+  chartControls.appendChild(metricLabel);
+  card.appendChild(chartControls);
+
   const chartHost = el("div", {});
   card.appendChild(chartHost);
   if (alliances.length) {
+    // Same row order as the table below (same key + direction), not just the same metric
+    // — so "who's on top" in the chart always matches "who's on top" in the table.
+    const chartRows = sortRowsBy(alliances, uiState.rankingSort.key, uiState.rankingSort.dir);
     renderHBarChart(chartHost, {
-      data: alliances.map(a => ({ label: a.alliance, value: a.score, color: sideColorVar(a.side) })),
-      valueFormat: (v) => v.toFixed(1),
+      data: chartRows.map(a => ({ label: a.alliance, value: Number(a[activeChartCol.key]) || 0, color: sideColorVar(a.side) })),
+      valueFormat: activeChartCol.format || ((v) => fmt.format(v)),
       tooltipFn: (tt, d) => {
         const a = alliances.find(x => x.alliance === d.label);
         tt.appendChild(ttTitle(`${a.alliance}（${sideLabel(a.side)}）`));
@@ -1635,29 +1869,11 @@ function renderRankingTab(model, alliances) {
   tableCard.appendChild(el("div", { class: "card-sub" }, [t("ranking.detailSub")]));
   const tblHost = el("div", {});
   renderSortableTable(tblHost, {
-    // Total score sits right after the identity columns (not buried at the far right),
-    // immediately followed by the 3 raw columns that are actually summed to make it —
-    // both highlighted (see .col-total-score / .col-score-part in styles.css) — so it's
-    // visually obvious which columns are "the formula" and which are just context.
-    columns: [
-      { key: "alliance", label: t("col.alliance"), text: true },
-      { key: "side", label: t("col.side"), format: (v) => sideLabel(v) },
-      { key: "score", label: t("col.score"), format: (v) => v.toFixed(1), className: "col-total-score" },
-      { key: "structureActionsPoints", label: "+ " + t("col.structureActionsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
-      { key: "attackScorePoints", label: "+ " + t("col.attackScorePoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
-      { key: "rubbleClearsPoints", label: "+ " + t("col.rubbleClearsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
-      { key: "participantCount", label: t("col.participantCount") },
-      { key: "structureActions", label: t("col.structureActions") },
-      { key: "attacksLanded", label: t("col.attacksLanded") },
-      { key: "attackWinRate", label: t("col.attackWinRate"), format: (v) => fmtPct(v ?? 0) },
-      { key: "attackScore", label: t("col.attackScore"), format: (v) => (v || 0).toFixed(1) },
-      { key: "attacksTaken", label: t("col.attacksTaken") },
-      { key: "defenseHoldRate", label: t("col.defenseHoldRate"), format: (v) => fmtPct(v ?? 0) },
-      { key: "rubbleClears", label: t("col.rubbleClears") },
-    ],
+    columns,
     rows: alliances,
     rowClassFn: (r) => r.alliance === uiState.focusAlliance ? "row-focus" : "",
-    initialSort: { key: "score", dir: "desc" },
+    initialSort: uiState.rankingSort,
+    onSort: setRankingSort,
   });
   tableCard.appendChild(tblHost);
   root.appendChild(tableCard);
@@ -1781,7 +1997,7 @@ function renderMembersTab(model, alliances) {
     t("members.formula2"),
   ]));
   card.appendChild(el("div", { class: "note", style: "margin-bottom:12px" }, [
-    model.meta.hasAttackScoreData ? t("attackScore.note") : t("attackScore.unavailable"),
+    model.meta.hasAttackDistanceData ? t("attackScore.note") : t("attackScore.noDistance"),
   ]));
   const tblHost = el("div", {});
   card.appendChild(tblHost);
@@ -1808,6 +2024,8 @@ function renderMembersTab(model, alliances) {
     { key: "attacksTakenLost", label: t("col.attacksTakenLost") },
     { key: "rubbleClears", label: t("col.rubbleClears") },
     { key: "teleportIns", label: t("col.refTeleportIns") },
+    { key: "ralliesOpened", label: t("col.refRalliesOpened") },
+    { key: "ralliesJoined", label: t("col.refRalliesJoined") },
   ];
 
   function renderMembersBody() {
