@@ -119,12 +119,16 @@ button { font: inherit; }
   outline: 2px solid var(--series-side-a); outline-offset: 2px;
 }
 
-select, input[type="text"], input[type="search"] {
+select, input[type="text"], input[type="search"], input[type="number"], textarea {
   border: 1px solid var(--border);
   background: var(--surface-1);
   color: var(--text-primary);
   border-radius: 8px;
   padding: 6px 10px;
+}
+
+.text-export-out textarea {
+  width: 100%; font-family: inherit; font-size: 12.5px; resize: vertical;
 }
 
 main { max-width: 1280px; margin: 0 auto; padding: 20px; }

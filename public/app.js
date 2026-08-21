@@ -108,6 +108,12 @@ const I18N = {
     "col.score": "総合スコア",
     "members.searchPlaceholder": "プレイヤー名で検索",
     "members.csvExport": "CSVエクスポート",
+    "export.textExport": "テキスト出力",
+    "export.countPlaceholder": "件数（空欄で全件）",
+    "export.copy": "コピー",
+    "export.copied": "コピーしました",
+    "export.copyManual": "選択しました。Ctrl/Cmd+Cでコピーしてください",
+    "export.rankingTitle": "{metric} ランキング",
     "members.formula1": "総合活動スコア = 拠点アクション（防衛/増援+攻撃、capitol・canon×4合計、種別を問わず均等） + 攻撃スコア（基地攻撃を、勝敗を問わず対象がcapitolに近いほど高くなるよう重み付け） + 瓦礫解体数（座標データがないため距離は未考慮）。3項目それぞれを「このファイル内の上位3人の平均を100点」として換算してから合計します（1位が突出していると100点を超えることもあります）。",
     "members.formula2": "テレポート回数・移動回数は参加のアクティブさの記録として表には出しますが、戦闘への貢献とは別軸のためスコアには含めていません。総合活動スコアは役割を問わず幅広く活動した人ほど高くなるため、拠点防衛・基地攻撃・瓦礫解体など担当が決まっているメンバー同士を比べる場合は、総合スコアではなく担当分野に対応する列（例：攻撃担当なら「攻撃スコア」列）でソートして比較してください。",
     "members.noAlliances": "表示できる連盟がありません。",
@@ -213,6 +219,12 @@ const I18N = {
     "col.score": "Total score",
     "members.searchPlaceholder": "Search player name",
     "members.csvExport": "Export CSV",
+    "export.textExport": "Text export",
+    "export.countPlaceholder": "Count (blank = all)",
+    "export.copy": "Copy",
+    "export.copied": "Copied",
+    "export.copyManual": "Selected — press Ctrl/Cmd+C to copy",
+    "export.rankingTitle": "{metric} Ranking",
     "members.formula1": "Total activity score = structure actions (defense/reinforce + attack, capitol + 4 canons combined, weighted equally) + attack score (base attacks, win or lose, weighted higher the closer the target was to capitol) + rubble clears (not distance-weighted — no coordinate data for it). Each of the 3 is scaled so 100 = the average of the top 3 players in this file on that axis, before being summed (can exceed 100 on an axis if #1 is well clear of #2/#3).",
     "members.formula2": "Teleport-in and relocate counts are shown for reference as activity records, but are excluded from the score since they're a separate axis from combat contribution. The total activity score rewards broad activity across all 3 axes regardless of role, so when comparing members who were assigned a specific job (structure defense, base attacks, rubble clearing, etc.), sort by that job's own column instead of the total score — e.g. sort by \"attack score\" for someone assigned to attack.",
     "members.noAlliances": "No alliances to display.",
@@ -318,6 +330,12 @@ const I18N = {
     "col.score": "综合评分",
     "members.searchPlaceholder": "按玩家名搜索",
     "members.csvExport": "导出CSV",
+    "export.textExport": "导出文本",
+    "export.countPlaceholder": "件数（留空为全部）",
+    "export.copy": "复制",
+    "export.copied": "已复制",
+    "export.copyManual": "已选中，请按Ctrl/Cmd+C复制",
+    "export.rankingTitle": "{metric}排行榜",
     "members.formula1": "综合活动评分 = 据点行动（防守/增援+攻击，capitol・canon×4合计，种类均等） + 攻击评分（基地攻击，不论输赢，目标离capitol越近权重越高） + 瓦砾清除数（无坐标数据，不考虑距离）。将3个项目分别以「本文件中前3名玩家的平均值」定为100分进行换算后再相加（若第1名明显领先第2、3名，该项可能超过100分）。",
     "members.formula2": "传送次数・移动次数仅作为参与活跃度的参考显示，因与战斗贡献属于不同维度，故不计入评分。综合活动评分对不分职责、广泛参与各类活动的人更有利，因此在比较被分配了特定职责（据点防守、基地攻击、瓦砾清除等）的成员时，请不要用综合评分，而是按其对应职责的那一列排序（例如负责攻击的成员请按「攻击评分」列排序）。",
     "members.noAlliances": "没有可显示的联盟。",
@@ -1531,9 +1549,57 @@ function downloadCsv(filename, columns, rows) {
   URL.revokeObjectURL(a.href);
 }
 
+/** Adds a "how many" number input + a text-export button to `toolbar`, and an (initially
+ *  hidden) copyable textarea to `outHost`. Meant for pasting straight into an in-game
+ *  mail announcing rankings — one name per line, in whatever order the table/chart is
+ *  currently sorted by, so nobody has to hand-type names off the screen. Only the name
+ *  column goes in the body; `getTitle()` supplies the one line above it that says what's
+ *  being ranked. */
+function attachTextExport(toolbar, outHost, { getRows, nameKey, getTitle }) {
+  toolbar.innerHTML = "";
+  const countInput = el("input", { type: "number", min: "1", placeholder: t("export.countPlaceholder"), style: "width:64px" });
+  const btn = el("button", { class: "muted-btn" }, [t("export.textExport")]);
+  toolbar.appendChild(countInput);
+  toolbar.appendChild(btn);
+
+  outHost.innerHTML = "";
+  const out = el("div", { class: "text-export-out", hidden: true });
+  const textarea = el("textarea", { readonly: true, rows: "10" });
+  const outToolbar = el("div", { class: "toolbar", style: "margin-top:6px" });
+  const copyBtn = el("button", { class: "muted-btn" }, [t("export.copy")]);
+  const copyStatus = el("span", { class: "note" }, []);
+  outToolbar.appendChild(copyBtn);
+  outToolbar.appendChild(copyStatus);
+  out.appendChild(textarea);
+  out.appendChild(outToolbar);
+  outHost.appendChild(out);
+
+  btn.addEventListener("click", () => {
+    const rows = getRows();
+    const n = parseInt(countInput.value, 10);
+    const limited = n > 0 ? rows.slice(0, n) : rows;
+    const names = limited.map(r => r[nameKey]).filter(Boolean);
+    textarea.value = [getTitle(), ...names].join("\n");
+    out.hidden = false;
+    textarea.focus();
+    textarea.select();
+  });
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(textarea.value);
+      copyStatus.textContent = t("export.copied");
+    } catch (err) {
+      textarea.focus();
+      textarea.select();
+      copyStatus.textContent = t("export.copyManual");
+    }
+    setTimeout(() => { copyStatus.textContent = ""; }, 2500);
+  });
+}
+
 /* ================= DASHBOARD BOOT & FILTERS ================= */
 
-const uiState = { side: "all", focusAlliance: null, membersAlliance: null, membersSearch: "", rankingSort: { key: "score", dir: "desc" } };
+const uiState = { side: "all", focusAlliance: null, membersAlliance: null, membersSearch: "", rankingSort: { key: "score", dir: "desc" }, membersSort: { key: "totalActivity", dir: "desc" } };
 
 function updateHeaderSubtitle(model) {
   $("#header-subtitle").textContent = t("header.subtitleLoaded", {
@@ -1805,6 +1871,10 @@ function renderRankingTab(model, alliances) {
   const tableCard = el("div", { class: "card" });
   tableCard.appendChild(el("h3", {}, [t("ranking.detailTitle")]));
   tableCard.appendChild(el("div", { class: "card-sub" }, [t("ranking.detailSub")]));
+  const exportToolbar = el("div", { class: "toolbar", style: "margin-bottom:8px" });
+  tableCard.appendChild(exportToolbar);
+  const exportOutHost = el("div", {});
+  tableCard.appendChild(exportOutHost);
   const tblHost = el("div", {});
   renderSortableTable(tblHost, {
     columns,
@@ -1815,6 +1885,18 @@ function renderRankingTab(model, alliances) {
   });
   tableCard.appendChild(tblHost);
   root.appendChild(tableCard);
+
+  // Text export mirrors the table's current sort exactly (same helper the chart above
+  // uses for its own row order) — one alliance name per line, ready to paste into an
+  // in-game mail.
+  attachTextExport(exportToolbar, exportOutHost, {
+    getRows: () => sortRowsBy(alliances, uiState.rankingSort.key, uiState.rankingSort.dir),
+    nameKey: "alliance",
+    getTitle: () => {
+      const col = columns.find(c => c.key === uiState.rankingSort.key) || columns[0];
+      return t("export.rankingTitle", { metric: col.label.replace(/^\+\s*/, "") });
+    },
+  });
 }
 
 /* ================= MEMBERS TAB (leader view) ================= */
@@ -1865,6 +1947,10 @@ function renderMembersTab(model, alliances) {
   card.appendChild(el("div", { class: "note", style: "margin-bottom:12px" }, [
     model.meta.hasAttackDistanceData ? t("attackScore.note") : t("attackScore.noDistance"),
   ]));
+  const exportToolbar = el("div", { class: "toolbar", style: "margin-bottom:8px" });
+  card.appendChild(exportToolbar);
+  const exportOutHost = el("div", {});
+  card.appendChild(exportOutHost);
   const tblHost = el("div", {});
   card.appendChild(tblHost);
   root.appendChild(card);
@@ -1922,11 +2008,25 @@ function renderMembersTab(model, alliances) {
     renderSortableTable(tblHost, {
       columns,
       rows: players,
-      initialSort: { key: "totalActivity", dir: "desc" },
+      initialSort: uiState.membersSort,
+      onSort: (key, dir) => { uiState.membersSort = { key, dir }; renderMembersBody(); },
     });
 
     const csvName = uiState.membersAlliance === ALL_ALLIANCES_VALUE ? "all" : uiState.membersAlliance;
     exportBtn.onclick = () => downloadCsv(`${csvName}_members.csv`, columns, players);
+
+    // Text export mirrors the table's current sort exactly — one player name per line,
+    // ready to paste into an in-game mail (see attachTextExport).
+    attachTextExport(exportToolbar, exportOutHost, {
+      getRows: () => sortRowsBy(players, uiState.membersSort.key, uiState.membersSort.dir),
+      nameKey: "player",
+      getTitle: () => {
+        const col = columns.find(c => c.key === uiState.membersSort.key) || columns[0];
+        const metric = col.label.replace(/^\+\s*/, "");
+        const scope = uiState.membersAlliance === ALL_ALLIANCES_VALUE ? null : uiState.membersAlliance;
+        return t("export.rankingTitle", { metric: scope ? `${scope} ${metric}` : metric });
+      },
+    });
   }
   renderMembersBody();
 }
