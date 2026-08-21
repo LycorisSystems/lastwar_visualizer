@@ -114,6 +114,11 @@ const I18N = {
     "export.copied": "コピーしました",
     "export.copyManual": "選択しました。Ctrl/Cmd+Cでコピーしてください",
     "export.rankingTitle": "{metric} ランキング",
+    "export.includeDetail": "順位・数値を含める",
+    "export.lineWithValue": "{rank}位 {name}　{value}",
+    "unit.points": "点",
+    "unit.times": "回",
+    "unit.people": "人",
     "members.formula1": "総合活動スコア = 拠点アクション（防衛/増援+攻撃、capitol・canon×4合計、種別を問わず均等） + 攻撃スコア（基地攻撃を、勝敗を問わず対象がcapitolに近いほど高くなるよう重み付け） + 瓦礫解体数（座標データがないため距離は未考慮）。3項目それぞれを「このファイル内の上位3人の平均を100点」として換算してから合計します（1位が突出していると100点を超えることもあります）。",
     "members.formula2": "テレポート回数・移動回数は参加のアクティブさの記録として表には出しますが、戦闘への貢献とは別軸のためスコアには含めていません。総合活動スコアは役割を問わず幅広く活動した人ほど高くなるため、拠点防衛・基地攻撃・瓦礫解体など担当が決まっているメンバー同士を比べる場合は、総合スコアではなく担当分野に対応する列（例：攻撃担当なら「攻撃スコア」列）でソートして比較してください。",
     "members.noAlliances": "表示できる連盟がありません。",
@@ -225,6 +230,11 @@ const I18N = {
     "export.copied": "Copied",
     "export.copyManual": "Selected — press Ctrl/Cmd+C to copy",
     "export.rankingTitle": "{metric} Ranking",
+    "export.includeDetail": "Include rank & value",
+    "export.lineWithValue": "{rank}. {name} - {value}",
+    "unit.points": " pts",
+    "unit.times": "",
+    "unit.people": "",
     "members.formula1": "Total activity score = structure actions (defense/reinforce + attack, capitol + 4 canons combined, weighted equally) + attack score (base attacks, win or lose, weighted higher the closer the target was to capitol) + rubble clears (not distance-weighted — no coordinate data for it). Each of the 3 is scaled so 100 = the average of the top 3 players in this file on that axis, before being summed (can exceed 100 on an axis if #1 is well clear of #2/#3).",
     "members.formula2": "Teleport-in and relocate counts are shown for reference as activity records, but are excluded from the score since they're a separate axis from combat contribution. The total activity score rewards broad activity across all 3 axes regardless of role, so when comparing members who were assigned a specific job (structure defense, base attacks, rubble clearing, etc.), sort by that job's own column instead of the total score — e.g. sort by \"attack score\" for someone assigned to attack.",
     "members.noAlliances": "No alliances to display.",
@@ -336,6 +346,11 @@ const I18N = {
     "export.copied": "已复制",
     "export.copyManual": "已选中，请按Ctrl/Cmd+C复制",
     "export.rankingTitle": "{metric}排行榜",
+    "export.includeDetail": "包含排名和数值",
+    "export.lineWithValue": "第{rank}名 {name}　{value}",
+    "unit.points": "分",
+    "unit.times": "次",
+    "unit.people": "人",
     "members.formula1": "综合活动评分 = 据点行动（防守/增援+攻击，capitol・canon×4合计，种类均等） + 攻击评分（基地攻击，不论输赢，目标离capitol越近权重越高） + 瓦砾清除数（无坐标数据，不考虑距离）。将3个项目分别以「本文件中前3名玩家的平均值」定为100分进行换算后再相加（若第1名明显领先第2、3名，该项可能超过100分）。",
     "members.formula2": "传送次数・移动次数仅作为参与活跃度的参考显示，因与战斗贡献属于不同维度，故不计入评分。综合活动评分对不分职责、广泛参与各类活动的人更有利，因此在比较被分配了特定职责（据点防守、基地攻击、瓦砾清除等）的成员时，请不要用综合评分，而是按其对应职责的那一列排序（例如负责攻击的成员请按「攻击评分」列排序）。",
     "members.noAlliances": "没有可显示的联盟。",
@@ -1549,17 +1564,27 @@ function downloadCsv(filename, columns, rows) {
   URL.revokeObjectURL(a.href);
 }
 
-/** Adds a "how many" number input + a text-export button to `toolbar`, and an (initially
- *  hidden) copyable textarea to `outHost`. Meant for pasting straight into an in-game
- *  mail announcing rankings — one name per line, in whatever order the table/chart is
- *  currently sorted by, so nobody has to hand-type names off the screen. Only the name
- *  column goes in the body; `getTitle()` supplies the one line above it that says what's
- *  being ranked. */
-function attachTextExport(toolbar, outHost, { getRows, nameKey, getTitle }) {
+/** Adds a "how many" number input, a "include rank & value" checkbox, and a text-export
+ *  button to `toolbar`, plus an (initially hidden) copyable textarea to `outHost`. Meant
+ *  for pasting straight into an in-game mail announcing rankings — one line per row, in
+ *  whatever order the table/chart is currently sorted by, so nobody has to hand-type
+ *  names off the screen. `getTitle()` supplies the one line above the list that says
+ *  what's being ranked; `getValueCol()` (optional) supplies the currently-sorted column's
+ *  {format, unit} for the checkbox — when it's off, or no column is given, each line is
+ *  just the name. */
+function attachTextExport(toolbar, outHost, { getRows, nameKey, getTitle, getValueCol }) {
   toolbar.innerHTML = "";
   const countInput = el("input", { type: "number", min: "1", placeholder: t("export.countPlaceholder"), style: "width:64px" });
-  const btn = el("button", { class: "muted-btn" }, [t("export.textExport")]);
   toolbar.appendChild(countInput);
+
+  const detailId = "export-detail-" + Math.random().toString(36).slice(2, 8);
+  const detailCheckbox = el("input", { type: "checkbox", id: detailId });
+  const detailLabel = el("label", { for: detailId, style: "display:inline-flex;align-items:center;gap:4px" }, [
+    detailCheckbox, document.createTextNode(t("export.includeDetail")),
+  ]);
+  toolbar.appendChild(detailLabel);
+
+  const btn = el("button", { class: "muted-btn" }, [t("export.textExport")]);
   toolbar.appendChild(btn);
 
   outHost.innerHTML = "";
@@ -1578,8 +1603,15 @@ function attachTextExport(toolbar, outHost, { getRows, nameKey, getTitle }) {
     const rows = getRows();
     const n = parseInt(countInput.value, 10);
     const limited = n > 0 ? rows.slice(0, n) : rows;
-    const names = limited.map(r => r[nameKey]).filter(Boolean);
-    textarea.value = [getTitle(), ...names].join("\n");
+    const col = getValueCol ? getValueCol() : null;
+    const lines = limited.map((r, i) => {
+      const name = r[nameKey];
+      if (!name) return null;
+      if (!detailCheckbox.checked || !col) return name;
+      const value = (col.format ? col.format(r[col.key], r) : String(r[col.key] ?? "")) + (col.unit || "");
+      return t("export.lineWithValue", { rank: i + 1, name, value });
+    }).filter(Boolean);
+    textarea.value = [getTitle(), ...lines].join("\n");
     out.hidden = false;
     textarea.focus();
     textarea.select();
@@ -1768,21 +1800,25 @@ function renderRankingTab(model, alliances) {
   // immediately followed by the 3 raw columns that are actually summed to make it — both
   // highlighted (see .col-total-score / .col-score-part in styles.css) — so it's visually
   // obvious which columns are "the formula" and which are just context.
+  // Units for the text-export "include rank & value" option below — blank where a unit
+  // wouldn't read naturally (rates already carry a "%" from fmtPct; alliance/side aren't
+  // values at all).
+  const U = { pts: t("unit.points"), times: t("unit.times"), people: t("unit.people") };
   const columns = [
     { key: "alliance", label: t("col.alliance"), text: true },
     { key: "side", label: t("col.side"), format: (v) => sideLabel(v) },
-    { key: "score", label: t("col.score"), format: (v) => v.toFixed(1), className: "col-total-score" },
-    { key: "structureActionsPoints", label: "+ " + t("col.structureActionsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
-    { key: "attackScorePoints", label: "+ " + t("col.attackScorePoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
-    { key: "rubbleClearsPoints", label: "+ " + t("col.rubbleClearsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
-    { key: "participantCount", label: t("col.participantCount") },
-    { key: "structureActions", label: t("col.structureActions") },
-    { key: "attacksLanded", label: t("col.attacksLanded") },
+    { key: "score", label: t("col.score"), format: (v) => v.toFixed(1), className: "col-total-score", unit: U.pts },
+    { key: "structureActionsPoints", label: "+ " + t("col.structureActionsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part", unit: U.pts },
+    { key: "attackScorePoints", label: "+ " + t("col.attackScorePoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part", unit: U.pts },
+    { key: "rubbleClearsPoints", label: "+ " + t("col.rubbleClearsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part", unit: U.pts },
+    { key: "participantCount", label: t("col.participantCount"), unit: U.people },
+    { key: "structureActions", label: t("col.structureActions"), unit: U.times },
+    { key: "attacksLanded", label: t("col.attacksLanded"), unit: U.times },
     { key: "attackWinRate", label: t("col.attackWinRate"), format: (v) => fmtPct(v ?? 0) },
-    { key: "attackScore", label: t("col.attackScore"), format: (v) => (v || 0).toFixed(1) },
-    { key: "attacksTaken", label: t("col.attacksTaken") },
+    { key: "attackScore", label: t("col.attackScore"), format: (v) => (v || 0).toFixed(1), unit: U.pts },
+    { key: "attacksTaken", label: t("col.attacksTaken"), unit: U.times },
     { key: "defenseHoldRate", label: t("col.defenseHoldRate"), format: (v) => fmtPct(v ?? 0) },
-    { key: "rubbleClears", label: t("col.rubbleClears") },
+    { key: "rubbleClears", label: t("col.rubbleClears"), unit: U.times },
   ];
   // "side" is technically a non-text column (it has a format function, like the numeric
   // ones) but its values are a server id, not a magnitude — plotting it as a bar height
@@ -1889,13 +1925,12 @@ function renderRankingTab(model, alliances) {
   // Text export mirrors the table's current sort exactly (same helper the chart above
   // uses for its own row order) — one alliance name per line, ready to paste into an
   // in-game mail.
+  const sortedRankingCol = () => columns.find(c => c.key === uiState.rankingSort.key) || columns[0];
   attachTextExport(exportToolbar, exportOutHost, {
     getRows: () => sortRowsBy(alliances, uiState.rankingSort.key, uiState.rankingSort.dir),
     nameKey: "alliance",
-    getTitle: () => {
-      const col = columns.find(c => c.key === uiState.rankingSort.key) || columns[0];
-      return t("export.rankingTitle", { metric: col.label.replace(/^\+\s*/, "") });
-    },
+    getValueCol: sortedRankingCol,
+    getTitle: () => t("export.rankingTitle", { metric: sortedRankingCol().label.replace(/^\+\s*/, "") }),
   });
 }
 
@@ -1959,25 +1994,28 @@ function renderMembersTab(model, alliances) {
   // score right after identity, immediately followed by the 3 raw columns summed to make
   // it (each already rescaled 0–100 before being added — see members.formula1), both
   // highlighted; everything else is reference/context and comes after.
+  // Units for the text-export "include rank & value" option below — see the same table
+  // in renderRankingTab for why some columns are left blank.
+  const U = { pts: t("unit.points"), times: t("unit.times") };
   const columns = [
     { key: "player", label: t("col.player"), text: true },
     { key: "alliance", label: t("col.alliance"), text: true },
-    { key: "totalActivity", label: t("col.totalActivity"), format: (v) => (v || 0).toFixed(1), className: "col-total-score" },
-    { key: "structureActionsPoints", label: "+ " + t("col.structureActionsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
-    { key: "attackScorePoints", label: "+ " + t("col.attackScorePoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
-    { key: "rubbleClearsPoints", label: "+ " + t("col.rubbleClearsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part" },
-    { key: "structureActionsAll", label: t("col.structureActionsAll") },
-    { key: "attacksLanded", label: t("col.attacksLanded") },
+    { key: "totalActivity", label: t("col.totalActivity"), format: (v) => (v || 0).toFixed(1), className: "col-total-score", unit: U.pts },
+    { key: "structureActionsPoints", label: "+ " + t("col.structureActionsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part", unit: U.pts },
+    { key: "attackScorePoints", label: "+ " + t("col.attackScorePoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part", unit: U.pts },
+    { key: "rubbleClearsPoints", label: "+ " + t("col.rubbleClearsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part", unit: U.pts },
+    { key: "structureActionsAll", label: t("col.structureActionsAll"), unit: U.times },
+    { key: "attacksLanded", label: t("col.attacksLanded"), unit: U.times },
     { key: "attackWinRate", label: t("col.attackWinRate"), format: (v) => v == null ? "—" : fmtPct(v) },
-    { key: "attackScore", label: t("col.attackScore"), format: (v) => (v || 0).toFixed(1) },
-    { key: "avgAttackScorePerHit", label: t("col.avgAttackScorePerHit"), format: (v) => v == null ? "—" : v.toFixed(2) },
+    { key: "attackScore", label: t("col.attackScore"), format: (v) => (v || 0).toFixed(1), unit: U.pts },
+    { key: "avgAttackScorePerHit", label: t("col.avgAttackScorePerHit"), format: (v) => v == null ? "—" : v.toFixed(2), unit: U.pts },
     { key: "avgAttackDistance", label: t("col.avgAttackDistance"), format: (v) => v == null ? "—" : v.toFixed(1) },
-    { key: "attacksTaken", label: t("col.attacksTaken") },
-    { key: "attacksTakenLost", label: t("col.attacksTakenLost") },
-    { key: "rubbleClears", label: t("col.rubbleClears") },
-    { key: "teleportIns", label: t("col.refTeleportIns") },
-    { key: "ralliesOpened", label: t("col.refRalliesOpened") },
-    { key: "ralliesJoined", label: t("col.refRalliesJoined") },
+    { key: "attacksTaken", label: t("col.attacksTaken"), unit: U.times },
+    { key: "attacksTakenLost", label: t("col.attacksTakenLost"), unit: U.times },
+    { key: "rubbleClears", label: t("col.rubbleClears"), unit: U.times },
+    { key: "teleportIns", label: t("col.refTeleportIns"), unit: U.times },
+    { key: "ralliesOpened", label: t("col.refRalliesOpened"), unit: U.times },
+    { key: "ralliesJoined", label: t("col.refRalliesJoined"), unit: U.times },
   ];
 
   function renderMembersBody() {
@@ -2017,12 +2055,13 @@ function renderMembersTab(model, alliances) {
 
     // Text export mirrors the table's current sort exactly — one player name per line,
     // ready to paste into an in-game mail (see attachTextExport).
+    const sortedMembersCol = () => columns.find(c => c.key === uiState.membersSort.key) || columns[0];
     attachTextExport(exportToolbar, exportOutHost, {
       getRows: () => sortRowsBy(players, uiState.membersSort.key, uiState.membersSort.dir),
       nameKey: "player",
+      getValueCol: sortedMembersCol,
       getTitle: () => {
-        const col = columns.find(c => c.key === uiState.membersSort.key) || columns[0];
-        const metric = col.label.replace(/^\+\s*/, "");
+        const metric = sortedMembersCol().label.replace(/^\+\s*/, "");
         const scope = uiState.membersAlliance === ALL_ALLIANCES_VALUE ? null : uiState.membersAlliance;
         return t("export.rankingTitle", { metric: scope ? `${scope} ${metric}` : metric });
       },
