@@ -17,10 +17,9 @@ This file is written in Japanese / English / Chinese. Scroll to your language's 
 
 1. **`public/index.html` をダブルクリックしてブラウザで開く**（Chrome / Edge / Safari など）。インストールや専用サーバーは不要です。
 2. 表示された画面に、SVSログの `.xlsx` ファイルをドラッグ＆ドロップ（またはクリックして選択）します。あらかじめ用意されたファイルがあれば、その下に一覧が自動で表示され、クリックするだけで開けます（後述）。
-3. 4つのタブでデータを確認できます。
+3. 3つのタブでデータを確認できます。
    - **概況**: 全体のKPIと、Capitol（首都拠点）を巡る攻防の時間帯別アクティビティ
    - **連盟ランキング**: 連盟ごとの総合貢献度スコア（算出方法は画面に常時表示されています）と詳細データ表
-   - **戦場マップ**: プレイヤーがテレポートで入城した座標を陣営・連盟ごとに色分け表示
    - **メンバー参加度（リーダー向け）**: 連盟を選んでメンバー個人の活動を一覧表示。連盟選択で「全員」を選ぶと、表示中の全連盟のメンバーを横断してソートできます（サーバー全体のPvP・瓦礫解体ランキングとしても使えます）。CSVエクスポートも可能です。
 4. 画面上部の **陣営フィルター** と **フォーカス連盟** で表示を絞り込めます。
 5. 画面右上の **日本語 / English / 中文** ボタンで表示言語を切り替えられます（次回開いたときも記憶されます）。
@@ -80,10 +79,9 @@ Upload an in-game SVS (State vs State) war log (Excel file) and this tool visual
 
 1. **Double-click `public/index.html`** to open it in your browser (Chrome, Edge, Safari, etc.). No installation or server needed.
 2. Drag and drop your SVS log `.xlsx` file onto the page (or click to choose a file). If any prepared files are available, they're listed automatically below the drop zone — click one to load it (see below).
-3. Explore the data across 4 tabs:
+3. Explore the data across 3 tabs:
    - **Overview**: headline KPIs and capitol contest activity over time
    - **Alliance ranking**: each alliance's contribution score (the formula is always shown on screen) plus a sortable detail table
-   - **Battlefield map**: teleport-in coordinates plotted and colored by side/alliance
    - **Member participation (for leaders)**: pick an alliance to see a sortable table of every member's activity. Choose "Everyone" in the alliance dropdown to sort across every alliance currently shown at once (doubles as a server-wide PvP / rubble leaderboard). CSV export is available.
 4. Use the **side filter** and **focus alliance** controls at the top to narrow down what's shown.
 5. Use the **日本語 / English / 中文** buttons at the top right to switch language (your choice is remembered for next time).
@@ -143,10 +141,9 @@ Below the "or" divider on the upload screen, you may see a list of buttons for p
 
 1. **双击 `public/index.html`**，用浏览器打开（Chrome、Edge、Safari 等均可）。无需安装，也无需服务器。
 2. 将SVS日志的 `.xlsx` 文件拖放到页面上（或点击选择文件）。如果已内置预设数据，拖放区下方会出现「打开……」按钮，一键加载（见下文）。
-3. 可通过4个标签页查看数据：
+3. 可通过3个标签页查看数据：
    - **概况**：整体关键指标，以及围绕Capitol（主城据点）的攻防活跃度随时间的变化
    - **联盟排名**：各联盟的综合贡献度评分（计算方法始终显示在页面上）以及可排序的详细数据表
-   - **战场地图**：按阵营/联盟着色显示玩家传送进入战场的坐标
    - **成员参与度（领导视角）**：选择一个联盟，查看每位成员活动情况的可排序表格。联盟下拉框选择「全部」可以跨所有当前显示的联盟一起排序（也可当作服务器整体的PvP/瓦砾清除排行榜使用）。支持导出CSV。
 4. 使用页面上方的**阵营筛选**和**关注联盟**可以缩小显示范围。
 5. 使用右上角的 **日本語 / English / 中文** 按钮切换显示语言（下次打开时会记住您的选择）。
