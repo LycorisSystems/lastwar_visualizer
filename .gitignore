@@ -9,6 +9,17 @@
 # Cloudflare Wrangler — local dev cache, machine-specific.
 .wrangler/
 
+# Personal-use member report tool (tools/member_report.js) and its input/output — never
+# pushed. Not part of the deployed web app; kept local-only on purpose even though this
+# repo is already private, since it deals with real member names/power/etc.
+/tools/
+/15MZ member.xlsx
+/15MZ member_report.xlsx
+/[0-9][0-9][0-9][0-9].xlsx
+
+# Excel lock files (created while a workbook is open).
+~$*.xlsx
+
 # Claude Code — local project settings/permissions, machine-specific.
 .claude/
 

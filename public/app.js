@@ -51,6 +51,8 @@ const I18N = {
     "filters.side": "陣営",
     "filters.sideAll": "すべて",
     "filters.sideAria": "陣営フィルター",
+    "filters.server": "サーバー",
+    "filters.serverAll": "すべて",
     "filters.focusAlliance": "フォーカス連盟",
     "filters.focusNone": "（選択なし）",
     "filters.summary": "{shown} / {total} 連盟を表示中",
@@ -74,7 +76,6 @@ const I18N = {
     "kpi.rubbleClearsSub": "completed_clears 合計",
     "overview.capitolChartTitle": "Capitol 攻防アクティビティ（時間帯別）",
     "overview.capitolChartSub": "15分ごとの garrison_hold / reinforce_in / rally_in 件数（capitol構造物のみ）",
-    "overview.noCapitolData": "capitolの時系列データが見つかりませんでした。",
     "overview.showTable": "表で見る",
     "overview.timeColumn": "時刻",
     "ranking.title": "連盟 総合貢献度スコア",
@@ -86,6 +87,9 @@ const I18N = {
     "ranking.noAlliances": "表示できる連盟がありません。",
     "ranking.detailTitle": "連盟別 詳細データ",
     "ranking.detailSub": "列見出しをクリックすると並び替えできます。「拠点アクション」は capitol・canon×4 の合計（内訳は上のグラフのツールチップ参照）。",
+    "ranking.structureContestTitle": "施設ごとの争奪状況",
+    "ranking.structureContestSub": "点の大きさ・色はその施設での活動量／優勢な連盟を表します。クリックすると、その施設で防衛・攻撃を合わせたアクション数が多い連盟の上位8件を表示します。",
+    "ranking.structureContestTotal": "合計アクション数",
     "tt.totalScore": "総合スコア",
     "tt.structureActionsTotal": "拠点アクション合計",
     "tt.breakdown": "　内訳: {structure}",
@@ -95,6 +99,7 @@ const I18N = {
     "tt.refTeleports": "（参考）テレポート回数",
     "col.alliance": "連盟",
     "col.side": "陣営",
+    "col.server": "サーバー",
     "col.participantCount": "参加人数",
     "col.structureActions": "拠点アクション(全施設)",
     "col.attacksLanded": "基地攻撃",
@@ -139,6 +144,11 @@ const I18N = {
     "struct.canon_NW": "canon_NW",
     "struct.canon_SE": "canon_SE",
     "struct.canon_SW": "canon_SW",
+    "struct.node": "拠点（node）",
+    "struct.tower": "塔（tower）",
+    "struct.special_objective": "特殊目標",
+    "side.camp_1": "防衛陣営",
+    "side.camp_2": "攻撃陣営",
     "col.rubbleMarches": "行軍数",
     "col.attackScore": "攻撃スコア",
     "col.avgAttackDistance": "平均対象距離",
@@ -167,6 +177,8 @@ const I18N = {
     "filters.side": "Side",
     "filters.sideAll": "All",
     "filters.sideAria": "Side filter",
+    "filters.server": "Server",
+    "filters.serverAll": "All",
     "filters.focusAlliance": "Focus alliance",
     "filters.focusNone": "(none selected)",
     "filters.summary": "Showing {shown} / {total} alliances",
@@ -190,7 +202,6 @@ const I18N = {
     "kpi.rubbleClearsSub": "Sum of completed_clears",
     "overview.capitolChartTitle": "Capitol contest activity (over time)",
     "overview.capitolChartSub": "garrison_hold / reinforce_in / rally_in counts per 15-minute bucket (capitol structure only)",
-    "overview.noCapitolData": "No capitol time-series data found.",
     "overview.showTable": "View as table",
     "overview.timeColumn": "Time",
     "ranking.title": "Alliance contribution score",
@@ -202,6 +213,9 @@ const I18N = {
     "ranking.noAlliances": "No alliances to display.",
     "ranking.detailTitle": "Alliance detail table",
     "ranking.detailSub": "Click a column header to sort. \"Structure actions\" is the total across capitol and all 4 canons (see the chart tooltip above for the breakdown).",
+    "ranking.structureContestTitle": "Contest by structure",
+    "ranking.structureContestSub": "Dot size/color show each structure's activity level and which alliance leads there. Click one to see its top 8 alliances by combined defense + attack actions.",
+    "ranking.structureContestTotal": "Total actions",
     "tt.totalScore": "Total score",
     "tt.structureActionsTotal": "Structure actions (total)",
     "tt.breakdown": "　breakdown: {structure}",
@@ -211,6 +225,7 @@ const I18N = {
     "tt.refTeleports": "(reference) Teleport-ins",
     "col.alliance": "Alliance",
     "col.side": "Side",
+    "col.server": "Server",
     "col.participantCount": "Participants",
     "col.structureActions": "Structure actions (all)",
     "col.attacksLanded": "Base attacks",
@@ -255,6 +270,11 @@ const I18N = {
     "struct.canon_NW": "canon (NW)",
     "struct.canon_SE": "canon (SE)",
     "struct.canon_SW": "canon (SW)",
+    "struct.node": "Node",
+    "struct.tower": "Tower",
+    "struct.special_objective": "Special objective",
+    "side.camp_1": "Defense camp",
+    "side.camp_2": "Attack camp",
     "col.rubbleMarches": "Marches",
     "col.attackScore": "Attack score",
     "col.avgAttackDistance": "Avg. target distance",
@@ -283,6 +303,8 @@ const I18N = {
     "filters.side": "阵营",
     "filters.sideAll": "全部",
     "filters.sideAria": "阵营筛选",
+    "filters.server": "服务器",
+    "filters.serverAll": "全部",
     "filters.focusAlliance": "关注联盟",
     "filters.focusNone": "（未选择）",
     "filters.summary": "显示 {shown} / {total} 个联盟",
@@ -306,7 +328,6 @@ const I18N = {
     "kpi.rubbleClearsSub": "completed_clears 合计",
     "overview.capitolChartTitle": "Capitol 攻防活跃度（按时间段）",
     "overview.capitolChartSub": "每15分钟的 garrison_hold / reinforce_in / rally_in 次数（仅capitol据点）",
-    "overview.noCapitolData": "未找到capitol的时间序列数据。",
     "overview.showTable": "查看表格",
     "overview.timeColumn": "时间",
     "ranking.title": "联盟综合贡献度评分",
@@ -318,6 +339,9 @@ const I18N = {
     "ranking.noAlliances": "没有可显示的联盟。",
     "ranking.detailTitle": "各联盟详细数据",
     "ranking.detailSub": "点击列标题可排序。「据点行动」为capitol・canon×4的合计（明细请查看上方图表的提示框）。",
+    "ranking.structureContestTitle": "按设施划分的争夺情况",
+    "ranking.structureContestSub": "圆点大小/颜色表示该设施的活跃程度及占优势的联盟。点击可查看该设施防守+攻击动作数最多的前8个联盟。",
+    "ranking.structureContestTotal": "总动作数",
     "tt.totalScore": "综合评分",
     "tt.structureActionsTotal": "据点行动合计",
     "tt.breakdown": "　明细：{structure}",
@@ -327,6 +351,7 @@ const I18N = {
     "tt.refTeleports": "（参考）传送次数",
     "col.alliance": "联盟",
     "col.side": "阵营",
+    "col.server": "服务器",
     "col.participantCount": "参与人数",
     "col.structureActions": "据点行动（全部）",
     "col.attacksLanded": "基地攻击",
@@ -371,6 +396,11 @@ const I18N = {
     "struct.canon_NW": "canon（西北）",
     "struct.canon_SE": "canon（东南）",
     "struct.canon_SW": "canon（西南）",
+    "struct.node": "据点（node）",
+    "struct.tower": "塔（tower）",
+    "struct.special_objective": "特殊目标",
+    "side.camp_1": "防守阵营",
+    "side.camp_2": "进攻阵营",
     "col.rubbleMarches": "行军数",
     "col.attackScore": "攻击评分",
     "col.avgAttackDistance": "目标平均距离",
@@ -683,7 +713,138 @@ function normAllianceName(v) {
   return (m ? m[1] : s).trim() || null;
 }
 
+/** "Goldvein" events (as opposed to SVS) pool many servers into 2 "camps" and use an
+ *  entirely different export shape — detected by the presence of an "all_observed" sheet,
+ *  which has no SVS equivalent. */
+function isGoldveinFormat(wb) {
+  return !!findSheetName(wb, ["all_observed"]);
+}
+
+/** Goldvein's own data has no human-readable structure names, only raw coordinates — this
+ *  map (target_x,target_y -> in-game name) was worked out by hand against an actual
+ *  export, given directly by the alliance. Node coordinates cover all 24 of the "A/B/G/H"
+ *  point clusters; tower coordinates cover all 8 "*C-*" points. Keyed by "x,y" using
+ *  whatever exact numbers this file's own structures_actions sheet contains — if a future
+ *  export shifts these slightly, an unmapped point still shows fine (see
+ *  normalizeGoldveinWorkbook), just under its raw structure id instead of a friendly name. */
+const GOLDVEIN_STRUCTURE_NAMES = {
+  "100,99": "G-4", "200,99": "G-5", "300,99": "G-6",
+  "100,199": "G-3", "200,199": "G-1",
+  "100,299": "G-2",
+  "100,699": "A-6",
+  "100,799": "A-5", "200,799": "A-1",
+  "100,899": "A-2", "200,899": "A-3", "300,899": "A-4",
+  "700,99": "H-4", "800,99": "H-5", "900,99": "H-6",
+  "800,199": "H-1", "900,199": "H-3",
+  "900,299": "H-2",
+  "700,899": "B-2", "800,899": "B-3", "900,899": "B-4",
+  "800,799": "B-1", "900,799": "B-5",
+  "900,699": "B-6",
+  "200,183": "GC-1", "200,215": "GC-2",
+  "200,783": "AC-2", "200,815": "AC-1",
+  "800,183": "HC-2", "800,215": "HC-1",
+  "800,783": "BC-2", "800,815": "BC-1",
+};
+
+/** Known limitations versus the SVS format, found by inspecting an actual export: no
+ *  reliable wall-clock time anywhere (every timestamp-shaped column turned out to be
+ *  either a relative mm:ss-style string or one identical placeholder value repeated on
+ *  every row, not real elapsed/clock time) — so every *Minute field here is null, and the
+ *  Overview tab's time-of-day activity chart and the event's reported time range won't be
+ *  meaningful for these files. There's also no old-name/rename-tracking sheet at all
+ *  (unlike SVS's Final Players/combatants/rallies old_name columns), so a renamed player
+ *  can't be resolved here the way one can for SVS — names are taken at face value.
+ *  Structures are many small "tower"/"node" points scattered per server rather than one
+ *  shared capitol, so no capitol coordinate is ever set here — attack score therefore
+ *  always falls back to a plain landed-attack count for these files, the same fallback an
+ *  SVS file with no coordinates gets (see hasCoordinateData in buildModel). */
+function normalizeGoldveinWorkbook(wb) {
+  const movSheet = findSheetName(wb, ["base_movements"]);
+  const structSheet = findSheetName(wb, ["structures_actions"]);
+  const hitsSheet = findSheetName(wb, ["base_attack_results"]);
+  const rubbleSheet = findSheetName(wb, ["rubble_hits"]);
+
+  const movements = rowsToObjects(sheetToRows(wb, movSheet), ["event", "player_name"]).map(r => ({
+    time: null,
+    minute: null,
+    event: normStr(r.event),
+    player: normName(r.player_name),
+    alliance: normStr(r.alliance),
+    side: normStr(r.camp),
+    server: sideStr(r.server),
+    x: Number(r.to_x), y: Number(r.to_y),
+  }));
+
+  // "special_objective" rows are a different, unrelated event's boss (confirmed directly
+  // by the alliance) rather than a real inter-alliance contest point, so they're dropped
+  // entirely here — never counted toward structureActions or the per-structure breakdown.
+  const structures = rowsToObjects(sheetToRows(wb, structSheet), ["player_name", "structure"])
+    .filter(r => normStr(r.structure_type) !== "special_objective")
+    .map(r => {
+      const targetX = Number(r.target_x), targetY = Number(r.target_y);
+      return {
+        dispatchMinute: null,
+        player: normName(r.player_name),
+        alliance: normStr(r.alliance),
+        side: normStr(r.camp),
+        server: sideStr(r.server),
+        // The specific point (e.g. "G-1", "AC-2") when known — see
+        // GOLDVEIN_STRUCTURE_NAMES — else the raw structure id as a fallback.
+        structure: GOLDVEIN_STRUCTURE_NAMES[`${targetX},${targetY}`] || normStr(r.structure),
+        // "reinforce" (defense) / "attack", "rally_attack" (offense) / "scout"
+        // (uncounted) — recognized alongside the SVS action strings in buildModel's
+        // isDefense/isAttack.
+        action: normStr(r.action),
+        targetX, targetY,
+        arriveMinute: null,
+        endMinute: null,
+        outcome: null,
+        isBattleFail: false,
+      };
+    });
+
+  const baseHits = rowsToObjects(sheetToRows(wb, hitsSheet), ["victim_name", "attacker_name"]).map(r => ({
+    minute: null,
+    victim: normName(r.victim_name),
+    victimAlliance: normStr(r.victim_alliance),
+    victimSide: normStr(r.victim_camp),
+    victimServer: sideStr(r.victim_server),
+    targetX: r.target_x != null ? Number(r.target_x) : null,
+    targetY: r.target_y != null ? Number(r.target_y) : null,
+    attacker: normName(r.attacker_name),
+    attackerAlliance: normStr(r.attacker_alliance),
+    attackerSide: normStr(r.attacker_camp),
+    attackerServer: sideStr(r.attacker_server),
+    attackerX: r.start_x != null ? Number(r.start_x) : null,
+    attackerY: r.start_y != null ? Number(r.start_y) : null,
+    attackerWon: r.attacker_won === true || r.attacker_won === "TRUE",
+  }));
+
+  // rubble_hits is one row per durability-removal tick, not one row per player like the
+  // SVS rubbles sheet — aggregate it into that same per-player shape here.
+  // "clearingMarches" has no direct equivalent in this format; the tick count stands in
+  // for it (a reference-only field — it isn't scored — so the imprecision is harmless).
+  const rubbleByPlayer = new Map();
+  rowsToObjects(sheetToRows(wb, rubbleSheet), ["alliance", "player_name"]).forEach(r => {
+    const alliance = normStr(r.alliance);
+    const player = normName(r.player_name);
+    if (!alliance || !player) return;
+    const key = alliance + "||" + player;
+    if (!rubbleByPlayer.has(key)) {
+      rubbleByPlayer.set(key, { player, alliance, side: normStr(r.camp), server: sideStr(r.server), clearingMarches: 0, completedClears: 0 });
+    }
+    const acc = rubbleByPlayer.get(key);
+    acc.clearingMarches += 1;
+    if (r.completion === true || r.completion === "TRUE") acc.completedClears += 1;
+  });
+
+  // No rallies/teleports/marches summary sheets exist in this export format.
+  return { movements, structures, baseHits, rubbles: Array.from(rubbleByPlayer.values()), teleports: [], marches: [], rallies: [] };
+}
+
 function normalizeWorkbook(wb) {
+  if (isGoldveinFormat(wb)) return normalizeGoldveinWorkbook(wb);
+
   const movSheet = findSheetName(wb, ["movements", "movement"]);
   const structSheet = findSheetName(wb, ["structures", "structure"]);
   const hitsSheet = findSheetName(wb, ["base_hits", "base hits", "hits"]);
@@ -1008,9 +1169,31 @@ function buildModel(raw, fileName) {
   const sideColorSlots = ["var(--series-side-a)", "var(--series-side-b)"];
   const sideColors = new Map(sidesPresent.map((s, i) => [s, sideColorSlots[i] || "var(--other-gray)"]));
 
+  // A Goldvein file's "side" (camp) pools several servers together (see isGoldveinFormat)
+  // — this tracks the finer-grained server per alliance the same way allianceSide tracks
+  // camp, so the UI can offer an optional server-level filter on top of the side one.
+  // Stays null throughout for a format that never sets a server field (SVS), since vote()
+  // is a no-op without one.
+  const serverVotes = new Map();
+  function voteServer(alliance, server) {
+    if (!alliance || !server) return;
+    if (!serverVotes.has(alliance)) serverVotes.set(alliance, {});
+    const o = serverVotes.get(alliance);
+    o[server] = (o[server] || 0) + 1;
+  }
+  raw.movements.forEach(m => voteServer(m.alliance, m.server));
+  raw.structures.forEach(s => voteServer(s.alliance, s.server));
+  raw.baseHits.forEach(b => { voteServer(b.attackerAlliance, b.attackerServer); voteServer(b.victimAlliance, b.victimServer); });
+  raw.rubbles.forEach(r => voteServer(r.alliance, r.server));
+  const allianceServer = new Map();
+  serverVotes.forEach((o, alliance) => {
+    const servers = Object.keys(o).sort((a, b) => o[b] - o[a]);
+    allianceServer.set(alliance, servers[0] || null);
+  });
+
   function newAllianceAcc(alliance) {
     return {
-      alliance, side: allianceSide.get(alliance) || null,
+      alliance, side: allianceSide.get(alliance) || null, server: allianceServer.get(alliance) || null,
       participants: new Set(),
       defenseActions: 0, attackActions: 0, capitolActions: 0, withdraws: 0,
       attacksLanded: 0, attacksWon: 0, attacksTaken: 0, attacksTakenLost: 0,
@@ -1099,14 +1282,20 @@ function buildModel(raw, fileName) {
   });
 
   const capitolTimelineBuckets = new Map();
+  // First-seen coordinate per named structure — a structure's position is fixed all day,
+  // so this is just "remember where each name is" for renderStructureContestCard's map.
+  // Not every export has usable coordinates on every row (SVS structures always do;
+  // Goldvein's do too, since target_x/target_y survive into normalizeGoldveinWorkbook).
+  const structureCoords = new Map();
   raw.structures.forEach(s => {
     const aAcc = getAlliance(s.alliance);
     if (aAcc && s.player) aAcc.participants.add(s.player);
     const pAcc = getPlayer(s.alliance, s.player);
     // Action strings have varied across exports of this log ("garrison_hold"/"garrison",
-    // "reinforce_in"/"reinforce", "rally_in"/"rally") — recognize both forms.
+    // "reinforce_in"/"reinforce", "rally_in"/"rally" for SVS; "attack"/"rally_attack"/
+    // "special_objective_attack" for Goldvein) — recognize every form seen so far.
     const isDefense = s.action === "garrison_hold" || s.action === "garrison" || s.action === "reinforce_in" || s.action === "reinforce";
-    const isAttack = s.action === "rally_in" || s.action === "rally";
+    const isAttack = s.action === "rally_in" || s.action === "rally" || s.action === "attack" || s.action === "rally_attack" || s.action === "special_objective_attack";
     if (isDefense) { if (aAcc) aAcc.defenseActions++; if (pAcc) pAcc.defenseActions++; }
     if (isAttack) { if (aAcc) aAcc.attackActions++; if (pAcc) pAcc.attackActions++; }
     if (s.action === "withdraw" && aAcc) aAcc.withdraws++;
@@ -1116,6 +1305,9 @@ function buildModel(raw, fileName) {
     if (s.structure && (isDefense || isAttack)) {
       if (aAcc) aAcc.structureBreakdown[s.structure] = (aAcc.structureBreakdown[s.structure] || 0) + 1;
       if (s.structure === "capitol") { if (aAcc) aAcc.capitolActions++; if (pAcc) pAcc.capitolActions++; }
+      if (s.structure && !structureCoords.has(s.structure) && isFinite(s.targetX) && isFinite(s.targetY)) {
+        structureCoords.set(s.structure, { x: s.targetX, y: s.targetY });
+      }
     }
 
     if (s.structure === "capitol" && s.dispatchMinute != null && s.side && (isDefense || isAttack)) {
@@ -1276,6 +1468,7 @@ function buildModel(raw, fileName) {
     meta: {
       fileName,
       sides: sidesPresent,
+      servers: Array.from(new Set(Array.from(allianceServer.values()).filter(Boolean))).sort(),
       minMinute: isFinite(minMinute) ? minMinute : 0,
       maxMinute: isFinite(maxMinute) ? maxMinute : 24 * 60,
       totalParticipants: new Set(players.map(p => p.player)).size,
@@ -1284,6 +1477,7 @@ function buildModel(raw, fileName) {
       hasAttackDistanceData: hasCoordinateData,
     },
     allianceSide, sideColors, alliances, players, capitolTimeline,
+    structurePositions: Array.from(structureCoords, ([name, xy]) => ({ name, ...xy })),
   };
 }
 
@@ -1298,7 +1492,14 @@ function sideColorVar(side) {
   if (side && map && map.has(side)) return map.get(side);
   return "var(--other-gray)";
 }
-function sideLabel(side) { return side || t("unknown"); }
+/** Display label for a "side" value. Most files use a plain server number ("472"),
+ *  shown as-is; a Goldvein file's side is "camp_1"/"camp_2" (see isGoldveinFormat), which
+ *  get a translated label the same way structureLabel() handles a structure id. */
+function sideLabel(side) {
+  if (!side) return t("unknown");
+  const dict = I18N[currentLang] || I18N.ja;
+  return dict["side." + side] || side;
+}
 
 function renderLegend(container, items) {
   container.innerHTML = "";
@@ -1631,7 +1832,7 @@ function attachTextExport(toolbar, outHost, { getRows, nameKey, getTitle, getVal
 
 /* ================= DASHBOARD BOOT & FILTERS ================= */
 
-const uiState = { side: "all", focusAlliance: null, membersAlliance: null, membersSearch: "", rankingSort: { key: "score", dir: "desc" }, membersSort: { key: "totalActivity", dir: "desc" } };
+const uiState = { side: "all", server: "all", focusAlliance: null, membersAlliance: null, membersSearch: "", rankingSort: { key: "score", dir: "desc" }, membersSort: { key: "totalActivity", dir: "desc" } };
 
 function updateHeaderSubtitle(model) {
   $("#header-subtitle").textContent = t("header.subtitleLoaded", {
@@ -1667,7 +1868,7 @@ function setupFilters(model) {
   sideFilterEl.setAttribute("aria-label", t("filters.sideAria"));
   const sides = model.meta.sides;
   ["all", ...sides].forEach(opt => {
-    const b = el("button", { type: "button", "aria-pressed": uiState.side === opt ? "true" : "false" }, [opt === "all" ? t("filters.sideAll") : opt]);
+    const b = el("button", { type: "button", "aria-pressed": uiState.side === opt ? "true" : "false" }, [opt === "all" ? t("filters.sideAll") : sideLabel(opt)]);
     b.addEventListener("click", () => {
       uiState.side = opt;
       $$("#side-filter button").forEach(btn => btn.setAttribute("aria-pressed", "false"));
@@ -1676,6 +1877,24 @@ function setupFilters(model) {
     });
     sideFilterEl.appendChild(b);
   });
+
+  // Only meaningful for a format where "side" pools several servers together (a Goldvein
+  // camp — see isGoldveinFormat); stays hidden for a file where every alliance's server
+  // is unknown (SVS never sets one, so model.meta.servers is empty there).
+  const servers = model.meta.servers || [];
+  const serverLabel = $("#server-filter-label");
+  serverLabel.hidden = servers.length === 0;
+  if (servers.length) {
+    const serverSel = $("#server-filter");
+    serverSel.innerHTML = "";
+    serverSel.appendChild(el("option", { value: "all" }, [t("filters.serverAll")]));
+    servers.forEach(s => serverSel.appendChild(el("option", { value: s }, [s])));
+    serverSel.value = uiState.server;
+    serverSel.addEventListener("change", () => {
+      uiState.server = serverSel.value;
+      renderActiveTab();
+    });
+  }
 
   const focusSel = $("#focus-alliance");
   focusSel.innerHTML = "";
@@ -1709,7 +1928,8 @@ function activeTabName() {
 function renderActiveTab() {
   const model = window.MODEL;
   if (!model) return;
-  const filteredAlliances = model.alliances.filter(a => uiState.side === "all" || a.side === uiState.side);
+  const filteredAlliances = model.alliances.filter(a =>
+    (uiState.side === "all" || a.side === uiState.side) && (uiState.server === "all" || a.server === uiState.server));
   $("#filter-summary").textContent = t("filters.summary", { shown: fmt.format(filteredAlliances.length), total: fmt.format(model.alliances.length) });
   const tab = activeTabName();
   if (tab === "overview") renderOverviewTab(model, filteredAlliances);
@@ -1745,46 +1965,50 @@ function renderOverviewTab(model, alliances) {
   kpiRow.appendChild(kpi(t("kpi.rubbleClears"), fmt.format(totalRubbleClears), t("kpi.rubbleClearsSub")));
   root.appendChild(kpiRow);
 
-  const card = el("div", { class: "card" });
-  card.appendChild(el("div", { class: "card-head" }, [
-    el("h3", {}, [t("overview.capitolChartTitle")]),
-  ]));
-  card.appendChild(el("div", { class: "card-sub" }, [t("overview.capitolChartSub")]));
-
-  const candidateKeys = uiState.side === "all" ? model.meta.sides : [uiState.side];
-  // Only plot sides that actually have capitol activity in this slice — small "guest"
-  // sides with a handful of events elsewhere often have zero capitol structure rows,
-  // and a flat zero line only clutters the legend.
-  const seriesKeys = candidateKeys.filter(k => model.capitolTimeline.some(r => (r[k] || 0) > 0));
-  const seriesColors = seriesKeys.map(sideColorVar);
-  const seriesLabels = seriesKeys.map(sideLabel);
-  if (seriesKeys.length > 1) {
-    const legendWrap = el("div", {});
-    renderLegend(legendWrap, seriesKeys.map((k, i) => ({ label: seriesLabels[i], color: seriesColors[i], shape: "line" })));
-    card.appendChild(legendWrap);
-  }
-  const chartHost = el("div", {});
-  card.appendChild(chartHost);
+  // No capitol timestamps at all (e.g. a Goldvein file — see isGoldveinFormat) means
+  // there's nothing honest to plot here, so the whole card is skipped rather than shown
+  // with an empty chart inside it.
   if (model.capitolTimeline.length) {
+    const card = el("div", { class: "card" });
+    card.appendChild(el("div", { class: "card-head" }, [
+      el("h3", {}, [t("overview.capitolChartTitle")]),
+    ]));
+    card.appendChild(el("div", { class: "card-sub" }, [t("overview.capitolChartSub")]));
+
+    const candidateKeys = uiState.side === "all" ? model.meta.sides : [uiState.side];
+    // Only plot sides that actually have capitol activity in this slice — small "guest"
+    // sides with a handful of events elsewhere often have zero capitol structure rows,
+    // and a flat zero line only clutters the legend.
+    const seriesKeys = candidateKeys.filter(k => model.capitolTimeline.some(r => (r[k] || 0) > 0));
+    const seriesColors = seriesKeys.map(sideColorVar);
+    const seriesLabels = seriesKeys.map(sideLabel);
+    if (seriesKeys.length > 1) {
+      const legendWrap = el("div", {});
+      renderLegend(legendWrap, seriesKeys.map((k, i) => ({ label: seriesLabels[i], color: seriesColors[i], shape: "line" })));
+      card.appendChild(legendWrap);
+    }
+    const chartHost = el("div", {});
+    card.appendChild(chartHost);
     renderTimeSeriesChart(chartHost, { rows: model.capitolTimeline, xKey: "minute", seriesKeys, seriesColors, seriesLabels });
-  } else {
-    chartHost.appendChild(el("div", { class: "empty-state" }, [t("overview.noCapitolData")]));
+
+    const details = el("details", {});
+    details.appendChild(el("summary", { class: "muted-btn", style: "display:inline-block" }, [t("overview.showTable")]));
+    const tblHost = el("div", { style: "margin-top:10px" });
+    renderSortableTable(tblHost, {
+      columns: [
+        { key: "minute", label: t("overview.timeColumn"), format: (v) => minutesToLabel(v) },
+        ...seriesKeys.map(k => ({ key: k, label: sideLabel(k), format: (v) => fmt.format(v || 0) })),
+      ],
+      rows: model.capitolTimeline,
+      initialSort: { key: "minute", dir: "asc" },
+    });
+    details.appendChild(tblHost);
+    card.appendChild(details);
+    root.appendChild(card);
   }
 
-  const details = el("details", {});
-  details.appendChild(el("summary", { class: "muted-btn", style: "display:inline-block" }, [t("overview.showTable")]));
-  const tblHost = el("div", { style: "margin-top:10px" });
-  renderSortableTable(tblHost, {
-    columns: [
-      { key: "minute", label: t("overview.timeColumn"), format: (v) => minutesToLabel(v) },
-      ...seriesKeys.map(k => ({ key: k, label: sideLabel(k), format: (v) => fmt.format(v || 0) })),
-    ],
-    rows: model.capitolTimeline,
-    initialSort: { key: "minute", dir: "asc" },
-  });
-  details.appendChild(tblHost);
-  card.appendChild(details);
-  root.appendChild(card);
+  const contestCard = renderStructureContestCard(model, alliances);
+  if (contestCard) root.appendChild(contestCard);
 }
 
 /* ================= RANKING TAB ================= */
@@ -1807,6 +2031,9 @@ function renderRankingTab(model, alliances) {
   const columns = [
     { key: "alliance", label: t("col.alliance"), text: true },
     { key: "side", label: t("col.side"), format: (v) => sideLabel(v) },
+    // Only meaningful for a format where "side" pools several servers together (a
+    // Goldvein camp) — omitted otherwise, same as the server filter (see setupFilters).
+    ...((model.meta.servers || []).length ? [{ key: "server", label: t("col.server") }] : []),
     { key: "score", label: t("col.score"), format: (v) => v.toFixed(1), className: "col-total-score", unit: U.pts },
     { key: "structureActionsPoints", label: "+ " + t("col.structureActionsPoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part", unit: U.pts },
     { key: "attackScorePoints", label: "+ " + t("col.attackScorePoints"), format: (v) => (v || 0).toFixed(1), className: "col-score-part", unit: U.pts },
@@ -1820,11 +2047,11 @@ function renderRankingTab(model, alliances) {
     { key: "defenseHoldRate", label: t("col.defenseHoldRate"), format: (v) => fmtPct(v ?? 0) },
     { key: "rubbleClears", label: t("col.rubbleClears"), unit: U.times },
   ];
-  // "side" is technically a non-text column (it has a format function, like the numeric
-  // ones) but its values are a server id, not a magnitude — plotting it as a bar height
-  // would be meaningless, so it's excluded here even though it's a legitimate thing to
+  // "side"/"server" are technically non-text columns (no format-as-number issue) but
+  // their values are identifiers, not magnitudes — plotting either as a bar height would
+  // be meaningless, so both are excluded here even though they're legitimate things to
   // sort the table by.
-  const chartColumns = columns.filter(c => !c.text && c.key !== "side");
+  const chartColumns = columns.filter(c => !c.text && c.key !== "side" && c.key !== "server");
 
   function setRankingSort(key, dir) {
     uiState.rankingSort = { key, dir };
@@ -1932,6 +2159,118 @@ function renderRankingTab(model, alliances) {
     getValueCol: sortedRankingCol,
     getTitle: () => t("export.rankingTitle", { metric: sortedRankingCol().label.replace(/^\+\s*/, "") }),
   });
+}
+
+/** Pivots each alliance's own structureBreakdown (structure name -> action count) into
+ *  structure name -> alliance -> count, so it reads as "who's fighting over this specific
+ *  point" rather than "what did this alliance fight over" — the Overview tab's stand-in
+ *  for a time-of-day chart on a file with no reliable time data (a Goldvein file; see
+ *  isGoldveinFormat), placed right where that chart would otherwise go.
+ *
+ *  When structure positions are known (model.structurePositions — every structure has one
+ *  in practice, but an older export might not), this draws them as a small clickable map
+ *  laid out like the real point layout, sized/colored by how much action each one has
+ *  seen; clicking a point swaps in its own top-8-alliance breakdown below the map. Falls
+ *  back to a plain grid of the busiest 12 points' breakdowns (no map) when no positions
+ *  are available at all. Returns null when there's nothing to show. */
+function renderStructureContestCard(model, alliances) {
+  const byStructure = new Map();
+  alliances.forEach(a => {
+    Object.entries(a.structureBreakdown || {}).forEach(([structure, count]) => {
+      if (!byStructure.has(structure)) byStructure.set(structure, new Map());
+      byStructure.get(structure).set(a.alliance, count);
+    });
+  });
+  if (!byStructure.size) return null;
+
+  const allianceBySide = new Map(alliances.map(a => [a.alliance, a.side]));
+  const structureTotal = (structure) => Array.from(byStructure.get(structure).values()).reduce((s, v) => s + v, 0);
+  const topAllianceOf = (structure) => Array.from(byStructure.get(structure).entries()).sort((a, b) => b[1] - a[1])[0][0];
+  const structureNames = Array.from(byStructure.keys()).sort((a, b) => structureTotal(b) - structureTotal(a));
+
+  const contestCard = el("div", { class: "card" });
+  contestCard.appendChild(el("h3", {}, [t("ranking.structureContestTitle")]));
+  contestCard.appendChild(el("div", { class: "card-sub" }, [t("ranking.structureContestSub")]));
+
+  function renderBreakdown(host, structure) {
+    host.innerHTML = "";
+    host.appendChild(el("div", { class: "structure-contest-label" }, [structureLabel(structure)]));
+    const top = Array.from(byStructure.get(structure).entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const chartHost = el("div", {});
+    host.appendChild(chartHost);
+    renderHBarChart(chartHost, {
+      data: top.map(([name, count]) => ({ label: name, value: count, color: sideColorVar(allianceBySide.get(name)) })),
+      valueFormat: (v) => fmt.format(v),
+    });
+  }
+
+  const positionByName = new Map((model.structurePositions || []).map(p => [p.name, p]));
+  const positioned = structureNames.filter(name => positionByName.has(name));
+
+  if (positioned.length) {
+    // Lane-based, not proportional: two points a few units apart in-game (a node and its
+    // neighboring tower, say) get their own evenly-spaced row/column instead of being
+    // squeezed to a couple of pixels apart the way true-to-scale coordinates would put
+    // them. Each distinct x (or y) value present becomes its own lane, in ascending order.
+    const xLanes = Array.from(new Set(positioned.map(n => positionByName.get(n).x))).sort((a, b) => a - b);
+    const yLanes = Array.from(new Set(positioned.map(n => positionByName.get(n).y))).sort((a, b) => a - b);
+    const pad = 34, size = 420;
+    const xStep = xLanes.length > 1 ? (size - pad * 2) / (xLanes.length - 1) : 0;
+    const yStep = yLanes.length > 1 ? (size - pad * 2) / (yLanes.length - 1) : 0;
+    const xScale = (x) => pad + xLanes.indexOf(x) * xStep;
+    // Flipped so a larger in-game y (as given for this map's layout) sits higher on screen.
+    const yScale = (y) => pad + (yLanes.length - 1 - yLanes.indexOf(y)) * yStep;
+    const r = 8; // fixed — not scaled by activity
+
+    const mapHost = el("div", { class: "structure-contest-map-wrap" });
+    const svg = svgEl("svg", { class: "chart-svg", viewBox: `0 0 ${size} ${size}` });
+    const detailHost = el("div", { class: "structure-contest-detail" });
+
+    function selectStructure(name, g) {
+      svg.querySelectorAll(".structure-map-point.selected").forEach(node => node.classList.remove("selected"));
+      if (g) g.classList.add("selected");
+      renderBreakdown(detailHost, name);
+    }
+
+    positioned.forEach(name => {
+      const pos = positionByName.get(name);
+      const cx = xScale(pos.x), cy = yScale(pos.y);
+      const total = structureTotal(name);
+      const g = svgEl("g", { class: "bar-hit structure-map-point", tabindex: "0" });
+      const dot = svgEl("circle", { cx, cy, r });
+      dot.style.fill = sideColorVar(allianceBySide.get(topAllianceOf(name)));
+      const label = svgEl("text", { x: cx, y: cy - r - 4, "text-anchor": "middle", class: "category-label" });
+      label.textContent = structureLabel(name);
+      g.appendChild(dot); g.appendChild(label);
+      g.addEventListener("click", () => selectStructure(name, g));
+      const show = (evt) => {
+        const p = evt.touches ? evt.touches[0] : evt;
+        showTooltip(p.clientX, p.clientY, (tt) => {
+          tt.appendChild(ttTitle(structureLabel(name)));
+          tt.appendChild(ttRow(t("ranking.structureContestTotal"), fmt.format(total)));
+        });
+      };
+      g.addEventListener("pointerenter", show);
+      g.addEventListener("pointermove", show);
+      g.addEventListener("pointerleave", hideTooltip);
+      svg.appendChild(g);
+    });
+    mapHost.appendChild(svg);
+    const layout = el("div", { class: "structure-contest-layout" });
+    layout.appendChild(mapHost);
+    layout.appendChild(detailHost);
+    contestCard.appendChild(layout);
+    selectStructure(structureNames[0]); // default to the single busiest point
+  } else {
+    const grid = el("div", { class: "structure-contest-grid" });
+    structureNames.slice(0, 12).forEach(structure => {
+      const item = el("div", { class: "structure-contest-item" });
+      renderBreakdown(item, structure);
+      grid.appendChild(item);
+    });
+    contestCard.appendChild(grid);
+  }
+  return contestCard;
 }
 
 /* ================= MEMBERS TAB (leader view) ================= */
