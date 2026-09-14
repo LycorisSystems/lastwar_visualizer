@@ -139,6 +139,7 @@ const I18N = {
     "col.refTeleportIns": "（参考）テレポート回数",
     "col.refRalliesOpened": "（参考）集結開始回数",
     "col.refRalliesJoined": "（参考）集結参加回数",
+    "col.refRallyActions": "（参考）集結関連行動回数",
     "struct.capitol": "capitol",
     "struct.canon_NE": "canon_NE",
     "struct.canon_NW": "canon_NW",
@@ -265,6 +266,7 @@ const I18N = {
     "col.refTeleportIns": "(reference) Teleport-ins",
     "col.refRalliesOpened": "(reference) Rallies opened",
     "col.refRalliesJoined": "(reference) Rallies joined",
+    "col.refRallyActions": "(reference) Rally-related actions",
     "struct.capitol": "capitol",
     "struct.canon_NE": "canon (NE)",
     "struct.canon_NW": "canon (NW)",
@@ -391,6 +393,7 @@ const I18N = {
     "col.refTeleportIns": "（参考）传送次数",
     "col.refRalliesOpened": "（参考）集结开始次数",
     "col.refRalliesJoined": "（参考）集结加入次数",
+    "col.refRallyActions": "（参考）集结相关行动次数",
     "struct.capitol": "capitol",
     "struct.canon_NE": "canon（东北）",
     "struct.canon_NW": "canon（西北）",
@@ -688,6 +691,11 @@ function timeOfDayMinutes(v) {
 }
 function toDateOrNull(v) { return v instanceof Date ? v : null; }
 function sideStr(v) { return v == null || v === "" ? null : String(Math.trunc(Number(v))); }
+/** Boolean-ish flag columns (attacker_won, completion, isbattlefail, …) come through as a
+ *  real boolean in some exports and as a string in others — and the string's casing isn't
+ *  even consistent across exporters ("TRUE", "True"), so compare case-insensitively rather
+ *  than against one exact string. */
+function isTrueFlag(v) { return v === true || (typeof v === "string" && v.trim().toUpperCase() === "TRUE"); }
 /** The same player/alliance can show up with inconsistent internal whitespace across
  *  sheets (e.g. base_hits recording an extra space the other sheets don't have) —
  *  collapsing runs of whitespace (incl. full-width U+3000) to a single space keeps
@@ -744,7 +752,34 @@ const GOLDVEIN_STRUCTURE_NAMES = {
   "200,783": "AC-2", "200,815": "AC-1",
   "800,183": "HC-2", "800,215": "HC-1",
   "800,783": "BC-2", "800,815": "BC-1",
+  // Confirmed for the 9/12 event, whose map uses an entirely different coordinate layout
+  // from 9/5's above — these keys only ever match that file, harmlessly falling through
+  // to the raw structure id for any other file (see the comment on this map's use below).
+  // Coordinates as given by the alliance are consistently 1 less on x than this export's
+  // own target_x (y always matched exactly) — confirmed repeatedly (FI-1 at "583,399"
+  // read in-game vs. this file's actual 584,399; then again across all 18 points below),
+  // so every x here is the given value + 1.
+  "584,599": "DI-1", "384,599": "CI-1", "384,399": "EI-1", "584,399": "FI-1",
+  // D/C/E/F zones' remaining node/canon points (mirrors the G/H/A/B zones' own
+  // node-cluster-plus-canon-pair shape above), given 9/12 only so far.
+  "300,399": "E2", "300,299": "E3", "400,399": "E1", "400,299": "E4",
+  "400,415": "EC-1", "400,383": "EC-2",
+  "300,699": "C2", "300,599": "C4", "400,699": "C3", "400,599": "C1",
+  "400,615": "CC-1", "400,583": "CC-2",
+  "600,599": "D-1", "600,615": "DC-1", "600,583": "DC-2",
+  "600,399": "F-1", "600,415": "FC-1", "600,383": "FC-2",
+  "600,699": "D2", "700,699": "D3", "700,599": "D4",
+  "700,399": "F2", "700,299": "F4", "600,299": "F3",
 };
+
+/** Coordinates confirmed by the alliance to be a different, unrelated event's boss
+ *  ("special_objective" in structure_type, same as the real structures above it shares
+ *  that type with) rather than a real inter-alliance contest point — excluded entirely
+ *  from structures parsing below, one file's boss coordinate at a time. structure_type
+ *  alone isn't a safe way to detect this: the 9/12 event tagged 4 *real* contest
+ *  structures (see DI-1/CI-1/EI-1/FI-1 above) with the exact same "special_objective"
+ *  type as its boss, so only the specific coordinate is trustworthy. */
+const GOLDVEIN_BOSS_COORDS = new Set(["526,670", "501,670"]);
 
 /** Known limitations versus the SVS format, found by inspecting an actual export: no
  *  reliable wall-clock time anywhere (every timestamp-shaped column turned out to be
@@ -775,11 +810,11 @@ function normalizeGoldveinWorkbook(wb) {
     x: Number(r.to_x), y: Number(r.to_y),
   }));
 
-  // "special_objective" rows are a different, unrelated event's boss (confirmed directly
-  // by the alliance) rather than a real inter-alliance contest point, so they're dropped
-  // entirely here — never counted toward structureActions or the per-structure breakdown.
+  // See GOLDVEIN_BOSS_COORDS — drops just that one unrelated-event boss point, never
+  // counted toward structureActions or the per-structure breakdown, while keeping every
+  // other row (including same-typed real structures at other coordinates).
   const structures = rowsToObjects(sheetToRows(wb, structSheet), ["player_name", "structure"])
-    .filter(r => normStr(r.structure_type) !== "special_objective")
+    .filter(r => !GOLDVEIN_BOSS_COORDS.has(`${Number(r.target_x)},${Number(r.target_y)}`))
     .map(r => {
       const targetX = Number(r.target_x), targetY = Number(r.target_y);
       return {
@@ -817,7 +852,7 @@ function normalizeGoldveinWorkbook(wb) {
     attackerServer: sideStr(r.attacker_server),
     attackerX: r.start_x != null ? Number(r.start_x) : null,
     attackerY: r.start_y != null ? Number(r.start_y) : null,
-    attackerWon: r.attacker_won === true || r.attacker_won === "TRUE",
+    attackerWon: isTrueFlag(r.attacker_won),
   }));
 
   // rubble_hits is one row per durability-removal tick, not one row per player like the
@@ -835,7 +870,7 @@ function normalizeGoldveinWorkbook(wb) {
     }
     const acc = rubbleByPlayer.get(key);
     acc.clearingMarches += 1;
-    if (r.completion === true || r.completion === "TRUE") acc.completedClears += 1;
+    if (isTrueFlag(r.completion)) acc.completedClears += 1;
   });
 
   // No rallies/teleports/marches summary sheets exist in this export format.
@@ -1003,7 +1038,7 @@ function normalizeWorkbook(wb) {
       arriveMinute: timeOfDayMinutes(r.arrive_time),
       endMinute: timeOfDayMinutes(r.end_time),
       outcome: normStr(r.outcome),
-      isBattleFail: r.isbattlefail === true || r.isbattlefail === "TRUE",
+      isBattleFail: isTrueFlag(r.isbattlefail),
     };
   });
 
@@ -1026,7 +1061,7 @@ function normalizeWorkbook(wb) {
       attackerSide: sideStr(r.attacker_side),
       attackerX: r.attacker_x != null ? Number(r.attacker_x) : null,
       attackerY: r.attacker_y != null ? Number(r.attacker_y) : null,
-      attackerWon: r.attacker_won === true || r.attacker_won === "TRUE",
+      attackerWon: isTrueFlag(r.attacker_won),
     };
   });
 
@@ -1202,7 +1237,7 @@ function buildModel(raw, fileName) {
       forcedRelocations: 0, teleportIns: 0,
       structureBreakdown: {},
       attackScore: 0, attackDistSum: 0, attackScoreHits: 0,
-      ralliesOpened: 0, ralliesJoined: 0,
+      ralliesOpened: 0, ralliesJoined: 0, rallyActions: 0,
     };
   }
   const allianceMap = new Map();
@@ -1220,7 +1255,7 @@ function buildModel(raw, fileName) {
       attacksLanded: 0, attacksWon: 0, attacksTaken: 0, attacksTakenLost: 0,
       rubbleClears: 0, rubbleMarches: 0,
       attackScore: 0, attackDistSum: 0, attackScoreHits: 0,
-      ralliesOpened: 0, ralliesJoined: 0,
+      ralliesOpened: 0, ralliesJoined: 0, rallyActions: 0,
     };
   }
   const playerMap = new Map();
@@ -1299,6 +1334,12 @@ function buildModel(raw, fileName) {
     if (isDefense) { if (aAcc) aAcc.defenseActions++; if (pAcc) pAcc.defenseActions++; }
     if (isAttack) { if (aAcc) aAcc.attackActions++; if (pAcc) pAcc.attackActions++; }
     if (s.action === "withdraw" && aAcc) aAcc.withdraws++;
+    // Goldvein has no rallies sheet at all (see normalizeGoldveinWorkbook), so unlike SVS
+    // there's no way to tell a rally's starter from its joiners — this is a reference-only
+    // stand-in for ralliesOpened/ralliesJoined below, counting every "rally_attack"-tagged
+    // action (already counted in attackActions above) so the member table isn't left
+    // showing a flat 0 for rally involvement on these files.
+    if (s.action === "rally_attack") { if (aAcc) aAcc.rallyActions++; if (pAcc) pAcc.rallyActions++; }
     // Informational only — capitol and the 4 canon points all count equally toward the
     // score via structureActions above; this breakdown is never separately weighted.
     // (No distance weighting here — see the note on attackScoreWeight() above.)
@@ -1475,6 +1516,10 @@ function buildModel(raw, fileName) {
       totalBaseHits: raw.baseHits.length,
       totalAttackerWins: raw.baseHits.filter(b => b.attackerWon).length,
       hasAttackDistanceData: hasCoordinateData,
+      // See the rallyActions comment above — true only for a format (Goldvein) that has
+      // no real rallies sheet, so the member table shows the rallyActions stand-in column
+      // instead of the (always-0-here) ralliesOpened/ralliesJoined pair.
+      hasRallyActionData: raw.structures.some(s => s.action === "rally_attack"),
     },
     allianceSide, sideColors, alliances, players, capitolTimeline,
     structurePositions: Array.from(structureCoords, ([name, xy]) => ({ name, ...xy })),
@@ -2207,6 +2252,15 @@ function renderStructureContestCard(model, alliances) {
   const positionByName = new Map((model.structurePositions || []).map(p => [p.name, p]));
   const positioned = structureNames.filter(name => positionByName.has(name));
 
+  // A raw fallback id (no confirmed friendly name yet, e.g. "node_600_399") is long
+  // enough to crowd neighboring labels on the map — show just the bare coordinate there
+  // instead; the tooltip and click-through breakdown panel still show the full id.
+  function mapPointLabel(name) {
+    const pos = positionByName.get(name);
+    if (pos && /^(node|tower)_/.test(name)) return `${pos.x},${pos.y}`;
+    return structureLabel(name);
+  }
+
   if (positioned.length) {
     // Lane-based, not proportional: two points a few units apart in-game (a node and its
     // neighboring tower, say) get their own evenly-spaced row/column instead of being
@@ -2214,13 +2268,14 @@ function renderStructureContestCard(model, alliances) {
     // them. Each distinct x (or y) value present becomes its own lane, in ascending order.
     const xLanes = Array.from(new Set(positioned.map(n => positionByName.get(n).x))).sort((a, b) => a - b);
     const yLanes = Array.from(new Set(positioned.map(n => positionByName.get(n).y))).sort((a, b) => a - b);
-    const pad = 34, size = 420;
+    const pad = 40, size = 560;
     const xStep = xLanes.length > 1 ? (size - pad * 2) / (xLanes.length - 1) : 0;
     const yStep = yLanes.length > 1 ? (size - pad * 2) / (yLanes.length - 1) : 0;
     const xScale = (x) => pad + xLanes.indexOf(x) * xStep;
     // Flipped so a larger in-game y (as given for this map's layout) sits higher on screen.
     const yScale = (y) => pad + (yLanes.length - 1 - yLanes.indexOf(y)) * yStep;
     const r = 8; // fixed — not scaled by activity
+    const hitR = 15; // invisible, larger than the visible dot — easier to click/tap without changing how big it looks
 
     const mapHost = el("div", { class: "structure-contest-map-wrap" });
     const svg = svgEl("svg", { class: "chart-svg", viewBox: `0 0 ${size} ${size}` });
@@ -2232,16 +2287,45 @@ function renderStructureContestCard(model, alliances) {
       renderBreakdown(detailHost, name);
     }
 
-    positioned.forEach(name => {
+    // Some events pack points densely enough (several node/tower pairs sharing an x lane
+    // a couple of y lanes apart) that no fixed above/below rule keeps every label clear —
+    // so this places labels greedily, busiest structure first, trying just above the dot
+    // then just below, and leaves a point unlabeled (dot + hit area still fully
+    // clickable/hoverable — see the tooltip below) rather than ever drawing overlapping
+    // text. Width is a rough character-count estimate; good enough for collision purposes
+    // at this font size without measuring real text metrics.
+    const positionedInfo = positioned.map(name => {
       const pos = positionByName.get(name);
-      const cx = xScale(pos.x), cy = yScale(pos.y);
-      const total = structureTotal(name);
+      return { name, cx: xScale(pos.x), cy: yScale(pos.y), total: structureTotal(name) };
+    });
+    function labelBox(cx, y, text) {
+      const w = text.length * 5.3 + 6;
+      return { x1: cx - w / 2, x2: cx + w / 2, y1: y - 9, y2: y + 2 };
+    }
+    function overlapsAny(box, placed) {
+      return placed.some(b => box.x1 < b.x2 && box.x2 > b.x1 && box.y1 < b.y2 && box.y2 > b.y1);
+    }
+    const placedBoxes = [];
+    const labelY = new Map(); // name -> y, or absent if this point got no label
+    positionedInfo.slice().sort((a, b) => b.total - a.total).forEach(({ name, cx, cy }) => {
+      const text = mapPointLabel(name);
+      for (const y of [cy - r - 4, cy + r + 13]) {
+        const box = labelBox(cx, y, text);
+        if (!overlapsAny(box, placedBoxes)) { placedBoxes.push(box); labelY.set(name, y); return; }
+      }
+    });
+
+    positionedInfo.forEach(({ name, cx, cy, total }) => {
       const g = svgEl("g", { class: "bar-hit structure-map-point", tabindex: "0" });
+      const hitArea = svgEl("circle", { cx, cy, r: hitR, fill: "transparent", class: "structure-map-hit" });
       const dot = svgEl("circle", { cx, cy, r });
       dot.style.fill = sideColorVar(allianceBySide.get(topAllianceOf(name)));
-      const label = svgEl("text", { x: cx, y: cy - r - 4, "text-anchor": "middle", class: "category-label" });
-      label.textContent = structureLabel(name);
-      g.appendChild(dot); g.appendChild(label);
+      g.appendChild(hitArea); g.appendChild(dot);
+      if (labelY.has(name)) {
+        const label = svgEl("text", { x: cx, y: labelY.get(name), "text-anchor": "middle", class: "structure-map-label" });
+        label.textContent = mapPointLabel(name);
+        g.appendChild(label);
+      }
       g.addEventListener("click", () => selectStructure(name, g));
       const show = (evt) => {
         const p = evt.touches ? evt.touches[0] : evt;
@@ -2353,8 +2437,15 @@ function renderMembersTab(model, alliances) {
     { key: "attacksTakenLost", label: t("col.attacksTakenLost"), unit: U.times },
     { key: "rubbleClears", label: t("col.rubbleClears"), unit: U.times },
     { key: "teleportIns", label: t("col.refTeleportIns"), unit: U.times },
-    { key: "ralliesOpened", label: t("col.refRalliesOpened"), unit: U.times },
-    { key: "ralliesJoined", label: t("col.refRalliesJoined"), unit: U.times },
+    // A format with no real rallies sheet (Goldvein) shows the rallyActions stand-in
+    // instead of the (always-0-there) opened/joined pair — see the rallyActions comment
+    // in buildModel for why the two can't be told apart there.
+    ...(model.meta.hasRallyActionData
+      ? [{ key: "rallyActions", label: t("col.refRallyActions"), unit: U.times }]
+      : [
+          { key: "ralliesOpened", label: t("col.refRalliesOpened"), unit: U.times },
+          { key: "ralliesJoined", label: t("col.refRalliesJoined"), unit: U.times },
+        ]),
   ];
 
   function renderMembersBody() {

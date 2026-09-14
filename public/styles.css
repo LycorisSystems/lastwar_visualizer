@@ -221,7 +221,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 20px; }
 .structure-contest-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 10px 12px; }
 .structure-contest-label { font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
 .structure-contest-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
-.structure-contest-map-wrap { flex: 1 1 320px; max-width: 420px; }
+.structure-contest-map-wrap { flex: 1 1 320px; max-width: 560px; }
 .structure-contest-detail { flex: 1 1 320px; max-width: 420px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 10px 12px; }
 
 /* Legend */
@@ -250,6 +250,11 @@ main { max-width: 1280px; margin: 0 auto; padding: 20px; }
 .bar-hit:hover rect, .bar-hit:hover path, .bar-hit:hover circle { filter: brightness(1.08); }
 .structure-map-point circle { stroke: var(--surface-1); stroke-width: 2; }
 .structure-map-point.selected circle { stroke: var(--text-primary); stroke-width: 3; }
+/* The larger invisible hit-circle behind each dot (bigger tap/click target without
+   changing how big the dot itself looks) must stay unstroked — more specific than the
+   plain ".structure-map-point circle" rule above so it wins. */
+.structure-map-point circle.structure-map-hit { stroke: none; }
+.structure-map-label { fill: var(--text-primary); font-size: 10px; }
 .axis-label { fill: var(--text-muted); font-size: 11px; }
 .axis-line { stroke: var(--baseline); stroke-width: 1; }
 .grid-line { stroke: var(--grid); stroke-width: 1; }
