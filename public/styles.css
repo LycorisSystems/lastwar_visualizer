@@ -221,7 +221,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 20px; }
 .structure-contest-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 10px 12px; }
 .structure-contest-label { font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
 .structure-contest-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
-.structure-contest-map-wrap { flex: 1 1 320px; max-width: 560px; }
+.structure-contest-map-wrap { flex: 1 1 320px; max-width: 760px; }
 .structure-contest-detail { flex: 1 1 320px; max-width: 420px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 10px 12px; }
 
 /* Legend */
@@ -229,6 +229,26 @@ main { max-width: 1280px; margin: 0 auto; padding: 20px; }
 .legend-item { display: flex; align-items: center; gap: 6px; }
 .legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
 .legend-line { width: 14px; height: 2px; border-radius: 2px; flex: none; }
+
+/* Loading overlay — shown from picking a file until the dashboard is drawn */
+#loading-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--page) 70%, transparent);
+}
+#loading-overlay[hidden] { display: none; }
+.loading-box {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-card);
+  padding: 22px 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  color: var(--text-secondary); font-size: 13px;
+}
+.loading-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 4px solid var(--grid); border-top-color: var(--series-side-a);
+  animation: loading-spin 0.8s linear infinite;
+}
+@keyframes loading-spin { to { transform: rotate(360deg); } }
 
 /* Tooltip */
 #tooltip {

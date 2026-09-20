@@ -46,6 +46,7 @@ const I18N = {
     "upload.note3": "データは1日単位のSVSイベントを想定しています（タイムスタンプが日付を跨ぐ場合、時刻のみで集計されることがあります）。",
     "upload.invalidFile": "xlsx形式のファイルを選択してください。",
     "upload.readError": "ファイルの読み込みに失敗しました。",
+    "loading.message": "読み込み中…",
     "upload.parseError": "Excelの解析に失敗しました: {msg}",
     "upload.presetDividerText": "または",
     "filters.side": "陣営",
@@ -141,6 +142,7 @@ const I18N = {
     "col.refRalliesJoined": "（参考）集結参加回数",
     "col.refRallyActions": "（参考）集結関連行動回数",
     "struct.capitol": "capitol",
+    "struct.Golden Palace": "ゴールデンパレス",
     "struct.canon_NE": "canon_NE",
     "struct.canon_NW": "canon_NW",
     "struct.canon_SE": "canon_SE",
@@ -173,6 +175,7 @@ const I18N = {
     "upload.note3": "Assumes a single-day SVS event (if timestamps cross midnight, they may be aggregated by time-of-day only).",
     "upload.invalidFile": "Please choose a .xlsx file.",
     "upload.readError": "Failed to read the file.",
+    "loading.message": "Loading…",
     "upload.parseError": "Failed to parse the Excel file: {msg}",
     "upload.presetDividerText": "or",
     "filters.side": "Side",
@@ -268,6 +271,7 @@ const I18N = {
     "col.refRalliesJoined": "(reference) Rallies joined",
     "col.refRallyActions": "(reference) Rally-related actions",
     "struct.capitol": "capitol",
+    "struct.Golden Palace": "Golden Palace",
     "struct.canon_NE": "canon (NE)",
     "struct.canon_NW": "canon (NW)",
     "struct.canon_SE": "canon (SE)",
@@ -300,6 +304,7 @@ const I18N = {
     "upload.note3": "数据假定为单日SVS活动（如时间戳跨越午夜，可能仅按时间进行汇总）。",
     "upload.invalidFile": "请选择 .xlsx 格式的文件。",
     "upload.readError": "文件读取失败。",
+    "loading.message": "加载中…",
     "upload.parseError": "Excel解析失败：{msg}",
     "upload.presetDividerText": "或",
     "filters.side": "阵营",
@@ -395,6 +400,7 @@ const I18N = {
     "col.refRalliesJoined": "（参考）集结加入次数",
     "col.refRallyActions": "（参考）集结相关行动次数",
     "struct.capitol": "capitol",
+    "struct.Golden Palace": "黄金宫殿",
     "struct.canon_NE": "canon（东北）",
     "struct.canon_NW": "canon（西北）",
     "struct.canon_SE": "canon（东南）",
@@ -547,14 +553,35 @@ function showUploadError(msg) {
   uploadError.style.display = "block";
 }
 
+/** Full-screen spinner for the read -> parse -> render stretch after picking a file, which
+ *  can take a few seconds for a large export. Idempotent both ways, so every exit path
+ *  (success, error, early return) can just call hideLoading() without tracking state. */
+function showLoading() {
+  const host = $("#loading-overlay");
+  if (!host) return;
+  $("#loading-message").textContent = t("loading.message");
+  host.hidden = false;
+}
+function hideLoading() {
+  const host = $("#loading-overlay");
+  if (host) host.hidden = true;
+}
+/** Resolves after the browser has actually painted the current DOM. The parse below is
+ *  synchronous and blocks the main thread, so without this the spinner would be queued
+ *  but never drawn before that work starts. */
+function nextPaint() {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
 function handleFile(file) {
   uploadError.style.display = "none";
   if (!/\.xlsx$/i.test(file.name)) {
     showUploadError(t("upload.invalidFile"));
     return;
   }
+  showLoading();
   const reader = new FileReader();
-  reader.onerror = () => showUploadError(t("upload.readError"));
+  reader.onerror = () => { hideLoading(); showUploadError(t("upload.readError")); };
   reader.onload = (e) => loadWorkbookArrayBuffer(e.target.result, file.name);
   reader.readAsArrayBuffer(file);
 }
@@ -562,14 +589,18 @@ function handleFile(file) {
 /** Shared by both manual upload (via handleFile/FileReader above) and the bundled-preset
  *  button below — same parse-and-boot path either way, just a different source for the
  *  raw bytes. */
-function loadWorkbookArrayBuffer(arrayBuffer, fileName) {
+async function loadWorkbookArrayBuffer(arrayBuffer, fileName) {
+  showLoading();
   try {
+    await nextPaint();
     const wb = XLSX.read(arrayBuffer, { type: "array", cellDates: true });
     const raw = normalizeWorkbook(wb);
     bootDashboard(raw, fileName);
   } catch (err) {
     console.error(err);
     showUploadError(t("upload.parseError", { msg: err && err.message ? err.message : String(err) }));
+  } finally {
+    hideLoading();
   }
 }
 
@@ -610,15 +641,17 @@ function loadWorkbookArrayBuffer(arrayBuffer, fileName) {
       btn.addEventListener("click", async () => {
         uploadError.style.display = "none";
         btn.disabled = true;
+        showLoading();
         try {
           const fileRes = await fetch(`/api/files/${encodeURIComponent(entry.name)}`);
           if (!fileRes.ok) throw new Error(`HTTP ${fileRes.status}`);
           const buf = await fileRes.arrayBuffer();
-          loadWorkbookArrayBuffer(buf, entry.name);
+          await loadWorkbookArrayBuffer(buf, entry.name);
         } catch (err) {
           console.error(err);
           showUploadError(t("upload.parseError", { msg: err && err.message ? err.message : String(err) }));
         } finally {
+          hideLoading();
           btn.disabled = false;
         }
       });
@@ -770,6 +803,11 @@ const GOLDVEIN_STRUCTURE_NAMES = {
   "600,399": "F-1", "600,415": "FC-1", "600,383": "FC-2",
   "600,699": "D2", "700,699": "D3", "700,599": "D4",
   "700,399": "F2", "700,299": "F4", "600,299": "F3",
+  // Center of the map, given for the final-week event (same x+1 rule as above). "Golden
+  // Palace" is translated for display via the struct.* i18n keys.
+  "500,499": "Golden Palace",
+  "509,508": "LC-2", "491,508": "LC-1", "491,490": "LC-3", "509,490": "LC-4",
+  "475,474": "LI-2", "525,524": "LI-1",
 };
 
 /** Coordinates confirmed by the alliance to be a different, unrelated event's boss
@@ -798,6 +836,7 @@ function normalizeGoldveinWorkbook(wb) {
   const structSheet = findSheetName(wb, ["structures_actions"]);
   const hitsSheet = findSheetName(wb, ["base_attack_results"]);
   const rubbleSheet = findSheetName(wb, ["rubble_hits"]);
+  const marchSheet = findSheetName(wb, ["base_attack_marches"]);
 
   const movements = rowsToObjects(sheetToRows(wb, movSheet), ["event", "player_name"]).map(r => ({
     time: null,
@@ -873,8 +912,15 @@ function normalizeGoldveinWorkbook(wb) {
     if (isTrueFlag(r.completion)) acc.completedClears += 1;
   });
 
+  // Rally-tagged base-attack marches: by far the bulk of rally involvement in this format
+  // (hundreds per event, vs. a handful of rally_attack rows on structures) — one row per
+  // participant, with no starter/joiner distinction. Feeds buildModel's rallyActions.
+  const rallyMarches = rowsToObjects(sheetToRows(wb, marchSheet), ["attack_type", "player_name"])
+    .filter(r => normStr(r.attack_type) === "rally_attack")
+    .map(r => ({ player: normName(r.player_name), alliance: normStr(r.alliance) }));
+
   // No rallies/teleports/marches summary sheets exist in this export format.
-  return { movements, structures, baseHits, rubbles: Array.from(rubbleByPlayer.values()), teleports: [], marches: [], rallies: [] };
+  return { movements, structures, baseHits, rubbles: Array.from(rubbleByPlayer.values()), teleports: [], marches: [], rallies: [], rallyMarches };
 }
 
 function normalizeWorkbook(wb) {
@@ -1337,7 +1383,8 @@ function buildModel(raw, fileName) {
     // Goldvein has no rallies sheet at all (see normalizeGoldveinWorkbook), so unlike SVS
     // there's no way to tell a rally's starter from its joiners — this is a reference-only
     // stand-in for ralliesOpened/ralliesJoined below, counting every "rally_attack"-tagged
-    // action (already counted in attackActions above) so the member table isn't left
+    // structure action (already counted in attackActions above) plus, further down, every
+    // rally-tagged base-attack march (the bulk of it) so the member table isn't left
     // showing a flat 0 for rally involvement on these files.
     if (s.action === "rally_attack") { if (aAcc) aAcc.rallyActions++; if (pAcc) pAcc.rallyActions++; }
     // Informational only — capitol and the 4 canon points all count equally toward the
@@ -1422,6 +1469,14 @@ function buildModel(raw, fileName) {
       if (joinAcc) joinAcc.ralliesJoined++;
       if (joinP) joinP.ralliesJoined++;
     });
+  });
+
+  // Goldvein's rally-tagged base-attack marches — lookup only, like the rallies loop above.
+  (raw.rallyMarches || []).forEach(m => {
+    const aAcc = allianceMap.get(m.alliance) || null;
+    const pAcc = aAcc && m.player ? playerMap.get(m.alliance + "||" + m.player) || null : null;
+    if (aAcc) aAcc.rallyActions++;
+    if (pAcc) pAcc.rallyActions++;
   });
 
   raw.teleports.forEach(t => {
@@ -1519,7 +1574,7 @@ function buildModel(raw, fileName) {
       // See the rallyActions comment above — true only for a format (Goldvein) that has
       // no real rallies sheet, so the member table shows the rallyActions stand-in column
       // instead of the (always-0-here) ralliesOpened/ralliesJoined pair.
-      hasRallyActionData: raw.structures.some(s => s.action === "rally_attack"),
+      hasRallyActionData: raw.structures.some(s => s.action === "rally_attack") || (raw.rallyMarches || []).length > 0,
     },
     allianceSide, sideColors, alliances, players, capitolTimeline,
     structurePositions: Array.from(structureCoords, ([name, xy]) => ({ name, ...xy })),
@@ -2268,7 +2323,10 @@ function renderStructureContestCard(model, alliances) {
     // them. Each distinct x (or y) value present becomes its own lane, in ascending order.
     const xLanes = Array.from(new Set(positioned.map(n => positionByName.get(n).x))).sort((a, b) => a - b);
     const yLanes = Array.from(new Set(positioned.map(n => positionByName.get(n).y))).sort((a, b) => a - b);
-    const pad = 40, size = 560;
+    // Grows with the number of lanes (a denser map needs more room per lane to keep every
+    // label clear) up to a cap; the wrap in styles.css scales the whole SVG down to fit.
+    const pad = 40, minStep = 36;
+    const size = Math.min(760, Math.max(560, pad * 2 + (Math.max(xLanes.length, yLanes.length) - 1) * minStep));
     const xStep = xLanes.length > 1 ? (size - pad * 2) / (xLanes.length - 1) : 0;
     const yStep = yLanes.length > 1 ? (size - pad * 2) / (yLanes.length - 1) : 0;
     const xScale = (x) => pad + xLanes.indexOf(x) * xStep;
@@ -2290,7 +2348,7 @@ function renderStructureContestCard(model, alliances) {
     // Some events pack points densely enough (several node/tower pairs sharing an x lane
     // a couple of y lanes apart) that no fixed above/below rule keeps every label clear —
     // so this places labels greedily, busiest structure first, trying just above the dot
-    // then just below, and leaves a point unlabeled (dot + hit area still fully
+    // then just below, then to either side, and leaves a point unlabeled (dot + hit area still fully
     // clickable/hoverable — see the tooltip below) rather than ever drawing overlapping
     // text. Width is a rough character-count estimate; good enough for collision purposes
     // at this font size without measuring real text metrics.
@@ -2298,20 +2356,30 @@ function renderStructureContestCard(model, alliances) {
       const pos = positionByName.get(name);
       return { name, cx: xScale(pos.x), cy: yScale(pos.y), total: structureTotal(name) };
     });
-    function labelBox(cx, y, text) {
-      const w = text.length * 5.3 + 6;
-      return { x1: cx - w / 2, x2: cx + w / 2, y1: y - 9, y2: y + 2 };
+    function labelBox(cx, y, text, anchor) {
+      // Full-width (CJK) glyphs are roughly twice as wide as Latin/digits at this size.
+      const w = Array.from(text).reduce((sum, ch) => sum + (ch.charCodeAt(0) > 0x2e80 ? 10 : 5.3), 6);
+      const x1 = anchor === "start" ? cx : anchor === "end" ? cx - w : cx - w / 2;
+      return { x1, x2: x1 + w, y1: y - 9, y2: y + 2 };
     }
     function overlapsAny(box, placed) {
       return placed.some(b => box.x1 < b.x2 && box.x2 > b.x1 && box.y1 < b.y2 && box.y2 > b.y1);
     }
-    const placedBoxes = [];
-    const labelY = new Map(); // name -> y, or absent if this point got no label
+    // Every dot (not just already-placed labels) is an obstacle too, so a label never sits
+    // on top of a neighboring point either.
+    const placedBoxes = positionedInfo.map(({ cx, cy }) => ({ x1: cx - r - 1, x2: cx + r + 1, y1: cy - r - 1, y2: cy + r + 1 }));
+    const labelSpot = new Map(); // name -> { x, y, anchor }, or absent if this point got no label
     positionedInfo.slice().sort((a, b) => b.total - a.total).forEach(({ name, cx, cy }) => {
       const text = mapPointLabel(name);
-      for (const y of [cy - r - 4, cy + r + 13]) {
-        const box = labelBox(cx, y, text);
-        if (!overlapsAny(box, placedBoxes)) { placedBoxes.push(box); labelY.set(name, y); return; }
+      const candidates = [
+        { x: cx, y: cy - r - 4, anchor: "middle" },
+        { x: cx, y: cy + r + 13, anchor: "middle" },
+        { x: cx + r + 4, y: cy + 4, anchor: "start" },
+        { x: cx - r - 4, y: cy + 4, anchor: "end" },
+      ];
+      for (const c of candidates) {
+        const box = labelBox(c.x, c.y, text, c.anchor);
+        if (!overlapsAny(box, placedBoxes)) { placedBoxes.push(box); labelSpot.set(name, c); return; }
       }
     });
 
@@ -2321,8 +2389,9 @@ function renderStructureContestCard(model, alliances) {
       const dot = svgEl("circle", { cx, cy, r });
       dot.style.fill = sideColorVar(allianceBySide.get(topAllianceOf(name)));
       g.appendChild(hitArea); g.appendChild(dot);
-      if (labelY.has(name)) {
-        const label = svgEl("text", { x: cx, y: labelY.get(name), "text-anchor": "middle", class: "structure-map-label" });
+      if (labelSpot.has(name)) {
+        const spot = labelSpot.get(name);
+        const label = svgEl("text", { x: spot.x, y: spot.y, "text-anchor": spot.anchor, class: "structure-map-label" });
         label.textContent = mapPointLabel(name);
         g.appendChild(label);
       }
