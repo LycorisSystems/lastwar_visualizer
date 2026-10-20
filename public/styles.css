@@ -194,6 +194,10 @@ main { max-width: 1280px; margin: 0 auto; padding: 20px; }
   background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-card);
 }
 .filter-row label { color: var(--text-secondary); font-size: 12.5px; display: flex; align-items: center; gap: 6px; }
+/* ".filter-row label" above beats the UA [hidden] rule on specificity, so the server
+   filter's hidden attribute (see setupFilters in app.js) was silently doing nothing —
+   this wins back over it for that one label. */
+.filter-row label[hidden] { display: none; }
 .segmented { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .segmented button {
   border: none; background: var(--surface-1); color: var(--text-secondary);

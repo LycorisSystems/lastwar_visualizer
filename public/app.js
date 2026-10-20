@@ -756,9 +756,24 @@ function normAllianceName(v) {
 
 /** "Goldvein" events (as opposed to SVS) pool many servers into 2 "camps" and use an
  *  entirely different export shape — detected by the presence of an "all_observed" sheet,
- *  which has no SVS equivalent. */
+ *  which has no SVS equivalent. Note this is purely about which *sheets* to read (the only
+ *  parser that understands "all_observed"/"structures_actions"/etc. at all); see
+ *  isGoldveinCampFile below for the separate question of which *display* behavior to use —
+ *  a plain two-side SVS war can be exported in this same sheet shape too. */
 function isGoldveinFormat(wb) {
   return !!findSheetName(wb, ["all_observed"]);
+}
+
+/** Whether to treat this file as a true multi-server "camp" event for display purposes
+ *  (the per-server filter/column, chiefly) rather than a plain two-side SVS war that
+ *  happens to share Goldvein's sheet shape — decided by filename, per the alliance: a
+ *  "svs-..."-named file is a simple pairing even when its export has incidental stray
+ *  rows from a handful of other servers (allied reinforcements, scouts, etc.), which would
+ *  otherwise populate model.meta.servers and show a working-but-misleading Server filter.
+ *  Only meaningful when isGoldveinFormat(wb) is also true — ignored for the classic SVS
+ *  sheet shape, which never sets a server field regardless. */
+function isGoldveinCampFile(fileName) {
+  return /^goldvein/i.test((fileName || "").trim());
 }
 
 /** Goldvein's own data has no human-readable structure names, only raw coordinates — this
@@ -1564,7 +1579,12 @@ function buildModel(raw, fileName) {
     meta: {
       fileName,
       sides: sidesPresent,
-      servers: Array.from(new Set(Array.from(allianceServer.values()).filter(Boolean))).sort(),
+      // See isGoldveinCampFile: a non-"goldvein"-named file keeps this empty regardless of
+      // whatever stray server values its rows carry, so the Server filter/column stay
+      // hidden — this is meant to be a simple two-side war, not a multi-server campaign.
+      servers: isGoldveinCampFile(fileName)
+        ? Array.from(new Set(Array.from(allianceServer.values()).filter(Boolean))).sort()
+        : [],
       minMinute: isFinite(minMinute) ? minMinute : 0,
       maxMinute: isFinite(maxMinute) ? maxMinute : 24 * 60,
       totalParticipants: new Set(players.map(p => p.player)).size,
