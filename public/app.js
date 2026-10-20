@@ -142,7 +142,6 @@ const I18N = {
     "col.refRalliesJoined": "（参考）集結参加回数",
     "col.refRallyActions": "（参考）集結関連行動回数",
     "struct.capitol": "capitol",
-    "struct.Golden Palace": "ゴールデンパレス",
     "struct.canon_NE": "canon_NE",
     "struct.canon_NW": "canon_NW",
     "struct.canon_SE": "canon_SE",
@@ -271,7 +270,6 @@ const I18N = {
     "col.refRalliesJoined": "(reference) Rallies joined",
     "col.refRallyActions": "(reference) Rally-related actions",
     "struct.capitol": "capitol",
-    "struct.Golden Palace": "Golden Palace",
     "struct.canon_NE": "canon (NE)",
     "struct.canon_NW": "canon (NW)",
     "struct.canon_SE": "canon (SE)",
@@ -400,7 +398,6 @@ const I18N = {
     "col.refRalliesJoined": "（参考）集结加入次数",
     "col.refRallyActions": "（参考）集结相关行动次数",
     "struct.capitol": "capitol",
-    "struct.Golden Palace": "黄金宫殿",
     "struct.canon_NE": "canon（东北）",
     "struct.canon_NW": "canon（西北）",
     "struct.canon_SE": "canon（东南）",
@@ -818,9 +815,13 @@ const GOLDVEIN_STRUCTURE_NAMES = {
   "600,399": "F-1", "600,415": "FC-1", "600,383": "FC-2",
   "600,699": "D2", "700,699": "D3", "700,599": "D4",
   "700,399": "F2", "700,299": "F4", "600,299": "F3",
-  // Center of the map, given for the final-week event (same x+1 rule as above). "Golden
-  // Palace" is translated for display via the struct.* i18n keys.
-  "500,499": "Golden Palace",
+  // Center of the map, given for the final-week event (same x+1 rule as above). This is
+  // the ordinary capitol (not a distinct named landmark, despite how the alliance first
+  // described it) — using the literal string "capitol" here, same as the classic SVS
+  // shape, is what lets buildModel's capitol-detection (distance-weighted attack score,
+  // the capitol contest-over-time chart) recognize it; struct.capitol already translates
+  // it for display.
+  "500,499": "capitol",
   "509,508": "LC-2", "491,508": "LC-1", "491,490": "LC-3", "509,490": "LC-4",
   "475,474": "LI-2", "525,524": "LI-1",
 };
@@ -2127,8 +2128,14 @@ function renderOverviewTab(model, alliances) {
     root.appendChild(card);
   }
 
-  const contestCard = renderStructureContestCard(model, alliances);
-  if (contestCard) root.appendChild(contestCard);
+  // Per-structure contest breakdown: a Goldvein-only feature (its interactive per-point
+  // map was built for Goldvein's many named structures) — not shown for a plain SVS war
+  // even when, as in some files, it happens to share Goldvein's sheet shape and map
+  // coordinates. See isGoldveinCampFile.
+  if (isGoldveinCampFile(model.meta.fileName)) {
+    const contestCard = renderStructureContestCard(model, alliances);
+    if (contestCard) root.appendChild(contestCard);
+  }
 }
 
 /* ================= RANKING TAB ================= */
