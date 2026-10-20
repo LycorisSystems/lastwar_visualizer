@@ -2128,14 +2128,8 @@ function renderOverviewTab(model, alliances) {
     root.appendChild(card);
   }
 
-  // Per-structure contest breakdown: a Goldvein-only feature (its interactive per-point
-  // map was built for Goldvein's many named structures) — not shown for a plain SVS war
-  // even when, as in some files, it happens to share Goldvein's sheet shape and map
-  // coordinates. See isGoldveinCampFile.
-  if (isGoldveinCampFile(model.meta.fileName)) {
-    const contestCard = renderStructureContestCard(model, alliances);
-    if (contestCard) root.appendChild(contestCard);
-  }
+  const contestCard = renderStructureContestCard(model, alliances);
+  if (contestCard) root.appendChild(contestCard);
 }
 
 /* ================= RANKING TAB ================= */
